@@ -5,6 +5,7 @@
 #  This software is released under the MIT License.
 #
 #  http://opensource.org/licenses/mit-license.php
+import json
 import os
 from typing import AsyncGenerator
 
@@ -14,7 +15,44 @@ from bs4 import BeautifulSoup
 from mcp import StdioServerParameters, stdio_client, ClientSession
 from mcp.types import TextContent
 from requests import Session
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, IpBlocked
+
+from youtube_transcript_api._transcripts import TranscriptListFetcher
+
+# オリジナルのメソッドを保存しておく
+original_extract_captions_json = TranscriptListFetcher._extract_captions_json
+
+
+# 新しい関数を定義
+def patched_extract_captions_json(self, html: str, video_id: str) -> dict:
+    splitted_html = html.split("var ytInitialPlayerResponse = ")
+
+    if len(splitted_html) <= 1:
+        if 'class="g-recaptcha"' in html:
+            raise IpBlocked(video_id)
+
+    json_string = splitted_html[1].split("</script>")[0].strip()
+    print(json_string)
+    video_data = json.loads(
+        json_string.split('};var')[0] + '}' if '};var' in json_string else \
+            json_string.rstrip(";")
+    )
+
+    self._assert_playability(video_data.get("playabilityStatus"), video_id)
+
+    captions_json = video_data.get("captions", {}).get(
+        "playerCaptionsTracklistRenderer"
+    )
+    if captions_json is None or "captionTracks" not in captions_json:
+        raise TranscriptsDisabled(video_id)
+
+    return captions_json
+
+
+
+# パッチを適用
+TranscriptListFetcher._extract_captions_json = patched_extract_captions_json
+
 
 params = StdioServerParameters(command="uv", args=["run", "mcp-youtube-transcript"])
 
