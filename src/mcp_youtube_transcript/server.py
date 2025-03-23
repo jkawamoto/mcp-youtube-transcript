@@ -19,42 +19,41 @@ from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConf
 
 
 
-# from youtube_transcript_api._transcripts import TranscriptListFetcher
-#
-# # オリジナルのメソッドを保存しておく
-# original_extract_captions_json = TranscriptListFetcher._extract_captions_json
-#
-#
-# # 新しい関数を定義
-# def patched_extract_captions_json(self, html: str, video_id: str) -> dict:
-#     splitted_html = html.split("var ytInitialPlayerResponse = ")
-#
-#     if len(splitted_html) <= 1:
-#         if 'class="g-recaptcha"' in html:
-#             raise IpBlocked(video_id)
-#
-#     json_string = splitted_html[1].split("</script>")[0].strip()
-#     video_data = json.loads(
-#         json_string.split('};var')[0] + '}' if '};var' in json_string else \
-#             json_string.rstrip(";")
-#     )
-#     print(video_data)
-#
-#     self._assert_playability(video_data.get("playabilityStatus"), video_id)
-#
-#     captions_json = video_data.get("captions", {}).get(
-#         "playerCaptionsTracklistRenderer"
-#     )
-#     if captions_json is None or "captionTracks" not in captions_json:
-#         raise TranscriptsDisabled(video_id)
-#
-#     return captions_json
-#
-#
-#
-# # パッチを適用
-# TranscriptListFetcher._extract_captions_json = patched_extract_captions_json
-#
+from youtube_transcript_api._transcripts import TranscriptListFetcher
+
+# オリジナルのメソッドを保存しておく
+original_extract_captions_json = TranscriptListFetcher._extract_captions_json
+
+
+# 新しい関数を定義
+def patched_extract_captions_json(self, html: str, video_id: str) -> dict:
+    splitted_html = html.split("var ytInitialPlayerResponse = ")
+
+    if len(splitted_html) <= 1:
+        if 'class="g-recaptcha"' in html:
+            raise IpBlocked(video_id)
+
+    json_string = splitted_html[1].split("</script>")[0].strip()
+    video_data = json.loads(
+        json_string.split('};var')[0] + '}' if '};var' in json_string else \
+            json_string.rstrip(";")
+    )
+
+    self._assert_playability(video_data.get("playabilityStatus"), video_id)
+
+    captions_json = video_data.get("captions", {}).get(
+        "playerCaptionsTracklistRenderer"
+    )
+    if captions_json is None or "captionTracks" not in captions_json:
+        raise TranscriptsDisabled(video_id)
+
+    return captions_json
+
+
+
+# パッチを適用
+TranscriptListFetcher._extract_captions_json = patched_extract_captions_json
+
 
 
 def new_server(
@@ -72,7 +71,7 @@ def new_server(
         proxy_config = GenericProxyConfig(http_proxy, https_proxy)
 
     client = Session()
-    client.headers.update({"User-Agent": "Mozilla/5.0"})
+    client.headers.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"})
     ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config, http_client=client)
 
     @lru_cache
