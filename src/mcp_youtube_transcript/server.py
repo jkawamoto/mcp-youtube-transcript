@@ -34,6 +34,7 @@ def patched_extract_captions_json(self, html: str, video_id: str) -> dict:
             raise IpBlocked(video_id)
 
     json_string = splitted_html[1].split("</script>")[0].strip()
+    print(json_string)
     video_data = json.loads(
         json_string.split('};var')[0] + '}' if '};var' in json_string else \
             json_string.rstrip(";")
