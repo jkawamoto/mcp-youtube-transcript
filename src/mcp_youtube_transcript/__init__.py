@@ -15,6 +15,7 @@ from urllib.parse import urlparse, parse_qs
 
 import requests
 from bs4 import BeautifulSoup
+from mcp import ServerSession
 from mcp.server import FastMCP
 from mcp.server.fastmcp import Context
 from pydantic import Field, BaseModel
@@ -80,7 +81,7 @@ def server(
 
     @mcp.tool()
     async def get_transcript(
-        ctx: Context,
+        ctx: Context[ServerSession, AppContext],
         url: str = Field(description="The URL of the YouTube video"),
         lang: str = Field(description="The preferred language for the transcript", default="en"),
         next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
@@ -95,8 +96,7 @@ def server(
                 raise ValueError(f"couldn't find a video ID from the provided URL: {url}.")
             video_id = q[0]
 
-        app_ctx: AppContext = ctx.request_context.lifespan_context  # type: ignore
-        title, transcripts = _get_transcript(app_ctx, video_id, lang)
+        title, transcripts = _get_transcript(ctx.request_context.lifespan_context, video_id, lang)
 
         if response_limit is None or response_limit <= 0:
             return Transcript(title=title, transcript="\n".join(transcripts))
