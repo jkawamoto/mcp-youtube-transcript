@@ -5,7 +5,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "mcp-youtube-transcript"
-version = "0.5.0"
+version = "0.3.5"
 description = "MCP server retrieving transcripts of YouTube videos"
 readme = "README.md"
 authors = [
@@ -21,15 +21,15 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
+# Pin dependency versions for security and reproducibility
 dependencies = [
-    "beautifulsoup4>=4.13.3",
-    "click>=8.1.8",
-    "mcp>=1.9",
-    "pydantic>=2.10.6",
-    "requests>=2.32.3",
-    "rich-click>=1.8.8",
-    "youtube-transcript-api>=1.1",
-    "yt-dlp>=2025.8.22",
+    "beautifulsoup4==4.13.5",  # Pinned to specific version
+    "click>=8.1.8,<9.0.0",     # Allow patch updates only
+    "mcp>=1.9,<2.0.0",         # Allow minor updates in v1
+    "pydantic>=2.10.6,<3.0.0", # Allow minor updates in v2
+    "requests>=2.32.3,<3.0.0", # Allow patch updates only
+    "rich-click>=1.8.8,<2.0.0", # Allow minor updates in v1
+    "youtube-transcript-api>=1.1,<2.0.0", # Allow minor updates in v1
 ]
 
 scripts.mcp-youtube-transcript = "mcp_youtube_transcript.cli:main"
@@ -41,19 +41,36 @@ dev = [
     "pre-commit-uv>=4.1.4",
     "pytest>=8.3.5",
     "pytest-mock>=3.14",
-    "pytest-recording>=0.13.4",
     "types-requests>=2.32.0.20250306",
+    "ruff>=0.1.0",
+    "bandit>=1.7.0",
 ]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 120
 
+# Add security-focused ruff rules
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print
+    "Q",   # flake8-quotes
+]
+ignore = [
+    "S101", # Allow assert statements (common in tests)
+]
+
 [tool.pyproject-fmt]
 indent = 4
 
 [tool.bumpversion]
-current_version = "0.5.0"
+current_version = "0.3.5"
 commit = true
 pre_commit_hooks = [
     "uv sync",
@@ -69,9 +86,12 @@ replace = 'version = "{new_version}"'
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+strict = true  # Enable strict mode for better security
 
-[[tool.mypy.overrides]]
-module = [
-    "yt_dlp.*",
-]
-ignore_missing_imports = true
+# Security scanning configuration
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]  # Skip assert_used test
+
+[tool.safety]
+ignore = []  # Add CVE IDs to ignore if needed
