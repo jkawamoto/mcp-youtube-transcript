@@ -138,7 +138,8 @@ def main(
     logger.info(f"Starting YouTube Transcript MCP server ({proxy_info})")
     
     try:
-        server(response_limit, webshare_proxy_username, webshare_proxy_password, http_proxy, https_proxy).run()
+        # Note: response_limit is not used by the original server function
+        server(webshare_proxy_username, webshare_proxy_password, http_proxy, https_proxy).run()
     except Exception as e:
         logger.error(f"Server error: {e}")
         raise
