@@ -23,14 +23,14 @@ classifiers = [
 ]
 dependencies = [
     "beautifulsoup4>=4.13.3",
-    "click>=8.1.8",
+    "click>=8.1.8,<8.3",
     "humanize>=4.13",
     "mcp>=1.9",
     "pydantic>=2.10.6",
     "requests>=2.32.3",
     "rich-click>=1.8.8",
     "youtube-transcript-api>=1.1",
-    "yt-dlp>=2025.8.22",
+    "yt-dlp>=2025.9.26",
 ]
 
 scripts.mcp-youtube-transcript = "mcp_youtube_transcript.cli:main"
