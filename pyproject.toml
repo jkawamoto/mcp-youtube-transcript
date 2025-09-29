@@ -5,7 +5,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "mcp-youtube-transcript"
-version = "0.5.1"
+version = "0.5.2"
 description = "MCP server retrieving transcripts of YouTube videos"
 readme = "README.md"
 authors = [
@@ -23,14 +23,14 @@ classifiers = [
 ]
 dependencies = [
     "beautifulsoup4>=4.13.3",
-    "click>=8.1.8",
+    "click>=8.1.8,<8.3",
     "humanize>=4.13",
     "mcp>=1.9",
     "pydantic>=2.10.6",
     "requests>=2.32.3",
     "rich-click>=1.8.8",
     "youtube-transcript-api>=1.1",
-    "yt-dlp>=2025.8.22",
+    "yt-dlp>=2025.9.26",
 ]
 
 scripts.mcp-youtube-transcript = "mcp_youtube_transcript.cli:main"
@@ -54,7 +54,7 @@ line-length = 120
 indent = 4
 
 [tool.bumpversion]
-current_version = "0.5.1"
+current_version = "0.5.2"
 commit = true
 pre_commit_hooks = [
     "uv sync",
