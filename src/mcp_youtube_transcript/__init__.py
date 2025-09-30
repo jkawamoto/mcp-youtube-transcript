@@ -21,7 +21,7 @@ from mcp import ServerSession
 from mcp.server import FastMCP
 from mcp.server.fastmcp import Context
 from pydantic import Field, BaseModel
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import YouTubeTranscriptApi, FetchedTranscriptSnippet
 from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig, ProxyConfig
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
@@ -69,7 +69,7 @@ def _parse_time_info(date: int, timestamp: int, duration: int) -> Tuple[datetime
 
 
 @lru_cache
-def _get_transcript(ctx: AppContext, video_id: str, lang: str) -> Tuple[str, list[str]]:
+def _get_transcript_snippets(ctx: AppContext, video_id: str, lang: str) -> Tuple[str, list[FetchedTranscriptSnippet]]:
     if lang == "en":
         languages = ["en"]
     else:
@@ -83,7 +83,7 @@ def _get_transcript(ctx: AppContext, video_id: str, lang: str) -> Tuple[str, lis
     title = soup.title.string if soup.title and soup.title.string else "Transcript"
 
     transcripts = ctx.ytt_api.fetch(video_id, languages=languages)
-    return title, [item.text for item in transcripts]
+    return title, transcripts.snippets
 
 
 @lru_cache
@@ -133,7 +133,8 @@ def server(
                 raise ValueError(f"couldn't find a video ID from the provided URL: {url}.")
             video_id = q[0]
 
-        title, transcripts = _get_transcript(ctx.request_context.lifespan_context, video_id, lang)
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, video_id, lang)
+        transcripts = (item.text for item in snippets)
 
         if response_limit is None or response_limit <= 0:
             return Transcript(title=title, transcript="\n".join(transcripts))
