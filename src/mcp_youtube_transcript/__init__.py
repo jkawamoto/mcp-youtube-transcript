@@ -5,6 +5,8 @@
 #  This software is released under the MIT License.
 #
 #  http://opensource.org/licenses/mit-license.php
+from __future__ import annotations
+
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -50,6 +52,31 @@ class Transcript(BaseModel):
     next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None)
 
 
+class TranscriptSnippet(BaseModel):
+    """Transcript snippet of a YouTube video."""
+
+    text: str = Field(description="Text of the transcript snippet")
+    start: float = Field(description="The timestamp at which this transcript snippet appears on screen in seconds.")
+    duration: float = Field(description="The duration of how long the snippet in seconds.")
+
+    def __len__(self) -> int:
+        return len(self.model_dump_json())
+
+    @classmethod
+    def from_fetched_transcript_snippet(
+        cls: type[TranscriptSnippet], snippet: FetchedTranscriptSnippet
+    ) -> TranscriptSnippet:
+        return cls(text=snippet.text, start=snippet.start, duration=snippet.duration)
+
+
+class TimedTranscript(BaseModel):
+    """Transcript of a YouTube video with timestamps."""
+
+    title: str = Field(description="Title of the video")
+    snippets: list[TranscriptSnippet] = Field(description="Transcript snippets of the video")
+    next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None)
+
+
 class VideoInfo(BaseModel):
     """Video information."""
 
@@ -66,6 +93,17 @@ def _parse_time_info(date: int, timestamp: int, duration: int) -> Tuple[datetime
     upload_date = datetime.combine(parsed_date, parsed_time)
     duration_str = humanize.naturaldelta(timedelta(seconds=duration))
     return upload_date, duration_str
+
+
+def _parse_video_id(url: str) -> str:
+    parsed_url = urlparse(url)
+    if parsed_url.hostname == "youtu.be":
+        return parsed_url.path.lstrip("/")
+    else:
+        q = parse_qs(parsed_url.query).get("v")
+        if q is None:
+            raise ValueError(f"couldn't find a video ID from the provided URL: {url}.")
+        return q[0]
 
 
 @lru_cache
@@ -124,16 +162,8 @@ def server(
         next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
     ) -> Transcript:
         """Retrieves the transcript of a YouTube video."""
-        parsed_url = urlparse(url)
-        if parsed_url.hostname == "youtu.be":
-            video_id = parsed_url.path.lstrip("/")
-        else:
-            q = parse_qs(parsed_url.query).get("v")
-            if q is None:
-                raise ValueError(f"couldn't find a video ID from the provided URL: {url}.")
-            video_id = q[0]
 
-        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, video_id, lang)
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, _parse_video_id(url), lang)
         transcripts = (item.text for item in snippets)
 
         if response_limit is None or response_limit <= 0:
@@ -150,6 +180,34 @@ def server(
         return Transcript(title=title, transcript=res[:-1], next_cursor=cursor)
 
     @mcp.tool()
+    async def get_timed_transcript(
+        ctx: Context[ServerSession, AppContext],
+        url: str = Field(description="The URL of the YouTube video"),
+        lang: str = Field(description="The preferred language for the transcript", default="en"),
+        next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
+    ) -> TimedTranscript:
+        """Retrieves the transcript of a YouTube video with timestamps."""
+
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, _parse_video_id(url), lang)
+
+        if response_limit is None or response_limit <= 0:
+            return TimedTranscript(
+                title=title, snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in snippets]
+            )
+
+        res = []
+        size = len(title) + 1
+        cursor = None
+        for i, s in islice(enumerate(snippets), int(next_cursor or 0), None):
+            snippet = TranscriptSnippet.from_fetched_transcript_snippet(s)
+            if size + len(snippet) + 1 > response_limit:
+                cursor = str(i)
+                break
+            res.append(snippet)
+
+        return TimedTranscript(title=title, snippets=res, next_cursor=cursor)
+
+    @mcp.tool()
     def get_video_info(
         ctx: Context[ServerSession, AppContext],
         url: str = Field(description="The URL of the YouTube video"),
@@ -160,4 +218,4 @@ def server(
     return mcp
 
 
-__all__: Final = ["server", "Transcript", "VideoInfo"]
+__all__: Final = ["server", "Transcript", "TimedTranscript", "TranscriptSnippet", "VideoInfo"]
