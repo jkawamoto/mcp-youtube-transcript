@@ -33,6 +33,10 @@
       "description": "Fetches the transcript of a specified YouTube video."
     },
     {
+      "name": "get_timed_transcript",
+      "description": "Fetches the transcript of a specified YouTube video with timestamps."
+    },
+    {
       "name": "get_video_info",
       "description": "Fetches the metadata of a specified YouTube video."
     }
