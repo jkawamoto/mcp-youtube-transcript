@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache, partial
 from itertools import islice
 from typing import AsyncIterator, Tuple
@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup
 from mcp import ServerSession
 from mcp.server import FastMCP
 from mcp.server.fastmcp import Context
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, AwareDatetime
 from youtube_transcript_api import YouTubeTranscriptApi, FetchedTranscriptSnippet
 from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig, ProxyConfig
 from yt_dlp import YoutubeDL
@@ -83,14 +83,14 @@ class VideoInfo(BaseModel):
     title: str = Field(description="Title of the video")
     description: str = Field(description="Description of the video")
     uploader: str = Field(description="Uploader of the video")
-    upload_date: datetime = Field(description="Upload date of the video")
+    upload_date: AwareDatetime = Field(description="Upload date of the video")
     duration: str = Field(description="Duration of the video")
 
 
 def _parse_time_info(date: int, timestamp: int, duration: int) -> Tuple[datetime, str]:
     parsed_date = datetime.strptime(str(date), "%Y%m%d").date()
     parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()
-    upload_date = datetime.combine(parsed_date, parsed_time)
+    upload_date = datetime.combine(parsed_date, parsed_time, timezone.utc)
     duration_str = humanize.naturaldelta(timedelta(seconds=duration))
     return upload_date, duration_str
 

@@ -5,7 +5,7 @@
 #  This software is released under the MIT License.
 #
 #  http://opensource.org/licenses/mit-license.php
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 from typing import AsyncGenerator
 
@@ -376,12 +376,12 @@ async def test_get_video_info(mcp_client_session: ClientSession) -> None:
     )
     assert isinstance(res.content[0], TextContent)
 
-    info = VideoInfo.model_validate_json(res.content[0].text)
+    info = VideoInfo.model_validate_json(res.content[0].text, strict=True)
     assert info == expect
     assert not res.isError
 
 
 def test_parse_time_info() -> None:
     upload_date, duration = _parse_time_info(20250921, 1650496000, 1234567)
-    assert upload_date == datetime(2025, 9, 21, 16, 50, 49, 600000)
+    assert upload_date == datetime(2025, 9, 21, 16, 50, 49, 600000, timezone.utc)
     assert duration == humanize.naturaldelta(timedelta(seconds=1234567))
