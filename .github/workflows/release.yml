@@ -17,7 +17,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: "*.mcpb"
-          draft: true
       - name: Update fileSha256 in server.json
         run: |
           SHA256_HASH=$(sha256sum "mcp-youtube-transcript.mcpb" | awk '{print $1}')
@@ -26,7 +25,7 @@ jobs:
           cat server.json
       - name: Install MCP Publisher
         run: |
-          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/v1.2.3/mcp-publisher_1.2.3_linux_amd64.tar.gz" | tar xz mcp-publisher
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
       - name: Login to MCP Registry
         run: ./mcp-publisher login github-oidc
       - name: Publish to MCP Registry
