@@ -3,3 +3,4 @@ tests/
 __pycache__/
 Dockerfile
 server.json
+glama.json

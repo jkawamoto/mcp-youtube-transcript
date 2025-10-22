@@ -3,3 +3,4 @@ tests/
 __pycache__/
 manifest.json
 server.json
+glama.json
