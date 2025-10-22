@@ -3,7 +3,6 @@
 [![GitHub License](https://img.shields.io/github/license/jkawamoto/mcp-youtube-transcript)](https://github.com/jkawamoto/mcp-youtube-transcript/blob/main/LICENSE)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![smithery badge](https://smithery.ai/badge/@jkawamoto/mcp-youtube-transcript)](https://smithery.ai/server/@jkawamoto/mcp-youtube-transcript)
 [![Dockerhub](https://img.shields.io/badge/Docker-mcp%2Fyoutube--transcript-blue.svg)](https://hub.docker.com/mcp/server/youtube_transcript)
 
 This MCP server retrieves transcripts for given YouTube video URLs.
@@ -80,29 +79,6 @@ To configure this server for LM Studio, click the button below.
 
 A Docker image for this server is available on [Docker Hub](https://hub.docker.com/mcp/server/youtube_transcript/).
 Please refer to the Docker Hub page for detailed usage instructions and documentation.
-
-### Installing via Smithery
-> [!NOTE]
-> When using this method, you will be using servers hosted by Smithery.
-> Requests and responses will be routed through their servers.
-> Please refer to the [Smithery Privacy Notice](https://smithery.ai/privacy) for information
-> about their data handling practices.
-
-The [Smithery CLI](https://github.com/smithery-ai/cli) enables the installation of MCP servers on various clients.
-
-For instance, to install this server for Claude Desktop, execute the following command:
-
-```bash
-npx -y @smithery/cli install @jkawamoto/mcp-youtube-transcript --client claude
-```
-
-To view the list of clients supported by the Smithery CLI, use this command:
-
-```bash
-npx -y @smithery/cli list clients
-```
-
-Refer to the [Smithery CLI documentation](https://github.com/smithery-ai/cli) for additional details.
 
 ## Response Pagination
 When retrieving transcripts for longer videos, the content may exceed the token size limits of the LLM.
