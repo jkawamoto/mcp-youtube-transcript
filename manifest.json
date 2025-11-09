@@ -21,7 +21,9 @@
       "args": [
         "--from",
         "${__dirname}",
-        "mcp-youtube-transcript"
+        "mcp-youtube-transcript",
+        "--response-limit",
+        "${user_config.response_limit}"
       ],
       "env": {
         "WEBSHARE_PROXY_USERNAME": "${user_config.webshare_proxy_username}",
@@ -51,6 +53,13 @@
     }
   },
   "user_config": {
+    "response_limit": {
+      "type": "number",
+      "title": "Maximum response character limit",
+      "description": "Maximum number of characters each response contains. Set a negative value to disable pagination.",
+      "required": false,
+      "default": 50000
+    },
     "webshare_proxy_username": {
       "type": "string",
       "title": "Webshare proxy service username",
