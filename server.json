@@ -7,13 +7,13 @@
     "url": "https://github.com/jkawamoto/mcp-youtube-transcript",
     "source": "github"
   },
-  "version": "0.5.5",
+  "version": "0.5.6",
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/jkawamoto/mcp-youtube-transcript/releases/download/v0.5.5/mcp-youtube-transcript.mcpb",
+      "identifier": "https://github.com/jkawamoto/mcp-youtube-transcript/releases/download/v0.5.6/mcp-youtube-transcript.mcpb",
       "fileSha256": "",
-      "version": "0.5.5",
+      "version": "0.5.6",
       "transport": {
         "type": "stdio"
       }
