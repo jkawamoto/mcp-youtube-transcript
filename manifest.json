@@ -1,5 +1,6 @@
 {
-  "manifest_version": "0.2",
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/refs/heads/main/schemas/mcpb-manifest-v0.3.schema.json",
+  "manifest_version": "0.3",
   "name": "mcp-youtube-transcript",
   "display_name": "YouTube Transcript MCP Server",
   "version": "0.5.5",
@@ -23,7 +24,10 @@
         "mcp-youtube-transcript"
       ],
       "env": {
-        "DEBUG": "${user_config.debug_mode}"
+        "WEBSHARE_PROXY_USERNAME": "${user_config.webshare_proxy_username}",
+        "WEBSHARE_PROXY_PASSWORD": "${user_config.webshare_proxy_password}",
+        "HTTP_PROXY": "${user_config.http_proxy}",
+        "HTTPS_PROXY": "${user_config.https_proxy}"
       }
     }
   },
@@ -44,6 +48,37 @@
   "compatibility": {
     "runtimes": {
       "python": ">=3.10"
+    }
+  },
+  "user_config": {
+    "webshare_proxy_username": {
+      "type": "string",
+      "title": "Webshare proxy service username",
+      "description": "Username for authentication with Webshare proxy service",
+      "required": false,
+      "default": ""
+    },
+    "webshare_proxy_password": {
+      "type": "string",
+      "title": "Webshare proxy service password",
+      "description": "Password for authentication with Webshare proxy service",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "http_proxy": {
+      "type": "string",
+      "title": "HTTP proxy server URL",
+      "description": "URL of an HTTP proxy server to use for requests (e.g. http://proxy.example.com:8080)",
+      "required": false,
+      "default": ""
+    },
+    "https_proxy": {
+      "type": "string",
+      "title": "HTTPS proxy server URL",
+      "description": "URL of an HTTPS proxy server to use for secure requests (e.g. https://proxy.example.com:8080)",
+      "required": false,
+      "default": ""
     }
   },
   "keywords": [
