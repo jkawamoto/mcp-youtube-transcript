@@ -38,7 +38,11 @@ class AppContext:
 
 @asynccontextmanager
 async def _app_lifespan(_server: FastMCP, proxy_config: ProxyConfig | None) -> AsyncIterator[AppContext]:
-    with requests.Session() as http_client, YoutubeDL(params={"quiet": True}, auto_init=False) as dlp:
+    # Prepare YoutubeDL params with proxy support
+    ytdlp_params = {"quiet": True}
+    ytdlp_params.update(_proxy_config_to_ytdlp_params(proxy_config))
+
+    with requests.Session() as http_client, YoutubeDL(params=ytdlp_params, auto_init=False) as dlp:
         ytt_api = YouTubeTranscriptApi(http_client=http_client, proxy_config=proxy_config)
         dlp.add_info_extractor(YoutubeIE())
         yield AppContext(http_client=http_client, ytt_api=ytt_api, dlp=dlp)
@@ -93,6 +97,32 @@ def _parse_time_info(date: int, timestamp: int, duration: int) -> Tuple[datetime
     upload_date = datetime.combine(parsed_date, parsed_time, timezone.utc)
     duration_str = humanize.naturaldelta(timedelta(seconds=duration))
     return upload_date, duration_str
+
+
+def _proxy_config_to_ytdlp_params(proxy_config: ProxyConfig | None) -> dict[str, str]:
+    """
+    Convert ProxyConfig to yt-dlp params format.
+
+    Args:
+        proxy_config: ProxyConfig object from youtube_transcript_api.proxies
+
+    Returns:
+        Dictionary with 'proxy' key if proxy is configured, empty dict otherwise.
+    """
+    if proxy_config is None:
+        return {}
+
+    # Get the requests-format proxy dict (format: {'http': '...', 'https': '...'})
+    proxy_dict = proxy_config.to_requests_dict()
+
+    # yt-dlp accepts a single 'proxy' parameter
+    # Prefer HTTPS over HTTP since YouTube uses HTTPS
+    if 'https' in proxy_dict and proxy_dict['https']:
+        return {'proxy': proxy_dict['https']}
+    elif 'http' in proxy_dict and proxy_dict['http']:
+        return {'proxy': proxy_dict['http']}
+
+    return {}
 
 
 def _parse_video_id(url: str) -> str:
