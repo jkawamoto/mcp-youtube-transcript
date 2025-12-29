@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache, partial
 from itertools import islice
-from typing import AsyncIterator, Tuple
+from typing import Any, AsyncIterator, Tuple
 from typing import Final
 from urllib.parse import urlparse, parse_qs
 
@@ -39,7 +39,7 @@ class AppContext:
 @asynccontextmanager
 async def _app_lifespan(_server: FastMCP, proxy_config: ProxyConfig | None) -> AsyncIterator[AppContext]:
     # Prepare YoutubeDL params with proxy support
-    ytdlp_params = {"quiet": True}
+    ytdlp_params: dict[str, Any] = {"quiet": True}
     ytdlp_params.update(_proxy_config_to_ytdlp_params(proxy_config))
 
     with requests.Session() as http_client, YoutubeDL(params=ytdlp_params, auto_init=False) as dlp:
@@ -117,10 +117,10 @@ def _proxy_config_to_ytdlp_params(proxy_config: ProxyConfig | None) -> dict[str,
 
     # yt-dlp accepts a single 'proxy' parameter
     # Prefer HTTPS over HTTP since YouTube uses HTTPS
-    if 'https' in proxy_dict and proxy_dict['https']:
-        return {'proxy': proxy_dict['https']}
-    elif 'http' in proxy_dict and proxy_dict['http']:
-        return {'proxy': proxy_dict['http']}
+    if "https" in proxy_dict and proxy_dict["https"]:
+        return {"proxy": proxy_dict["https"]}
+    elif "http" in proxy_dict and proxy_dict["http"]:
+        return {"proxy": proxy_dict["http"]}
 
     return {}
 
