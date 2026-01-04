@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/refs/heads/main/schemas/mcpb-manifest-v0.3.schema.json",
-  "manifest_version": "0.3",
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/refs/heads/main/schemas/mcpb-manifest-v0.4.schema.json",
+  "manifest_version": "0.4",
   "name": "mcp-youtube-transcript",
   "display_name": "YouTube Transcript MCP Server",
   "version": "0.5.6",
