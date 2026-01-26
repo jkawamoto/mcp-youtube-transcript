@@ -24,7 +24,6 @@ classifiers = [
 ]
 dependencies = [
     "beautifulsoup4>=4.13.3",
-    "click>=8.1.8,<8.3",
     "humanize>=4.13",
     "mcp>=1.9",
     "pydantic>=2.10.6",

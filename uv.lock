@@ -542,7 +542,6 @@ version = "0.5.7"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
-    { name = "click" },
     { name = "humanize" },
     { name = "mcp" },
     { name = "pydantic" },
@@ -566,7 +565,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.13.3" },
-    { name = "click", specifier = ">=8.1.8,<8.3" },
     { name = "humanize", specifier = ">=4.13" },
     { name = "mcp", specifier = ">=1.9" },
     { name = "pydantic", specifier = ">=2.10.6" },
