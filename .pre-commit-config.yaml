@@ -11,11 +11,11 @@ repos:
       - id: pretty-format-json
         args: [--autofix, --no-sort-keys]
   - repo: https://github.com/google/yamlfmt
-    rev: v0.20.0
+    rev: v0.21.0
     hooks:
       - id: yamlfmt
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+    rev: v0.14.14
     hooks:
       - id: ruff
         args: [--fix]
