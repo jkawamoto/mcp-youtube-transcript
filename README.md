@@ -23,7 +23,7 @@ Fetches the transcript of a specified YouTube video.
 - **next_cursor** *(string, optional)*: Cursor to retrieve the next page of the transcript.
 
 ### `get_timed_transcript`
-Fetches the transcript of a specified YouTube video with timestamps..
+Fetches the transcript of a specified YouTube video with timestamps.
 
 #### Parameters
 - **url** *(string)*: The full URL of the YouTube video. This field is required.
@@ -40,15 +40,18 @@ Fetches the metadata of a specified YouTube video.
 > [!NOTE]
 > You'll need [`uv`](https://docs.astral.sh/uv) installed on your system to use `uvx` command.
 
-### For codename goose
+### For [goose](https://block.github.io/goose/)
 Please refer to this tutorial for detailed installation instructions:
 [YouTube Transcript Extension](https://block.github.io/goose/docs/mcp/youtube-transcript-mcp).
 
-### For Claude Desktop
+### For [Claude](https://claude.com/download)
 
 Download the latest MCP bundle `mcp-youtube-transcript.mcpb` from
 the [Releases](https://github.com/jkawamoto/mcp-youtube-transcript/releases) page,
 then open the downloaded `.mcpb `file or drag it into the Claude Desktop's Settings window.
+
+<details>
+<summary>Manually configuration</summary>
 
 You can also manually configure this server for Claude Desktop.
 Edit the `claude_desktop_config.json` file by adding the following entry under
@@ -69,10 +72,13 @@ Edit the `claude_desktop_config.json` file by adding the following entry under
 }
 ```
 After editing, restart the application.
-For more information,
-see: [For Claude Desktop Users - Model Context Protocol](https://modelcontextprotocol.io/quickstart/user).
 
-### For LM Studio
+</details>
+
+For more information,
+see: [Connect to local MCP servers - Model Context Protocol.](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
+
+### For [LM Studio](https://lmstudio.ai/)
 To configure this server for LM Studio, click the button below.
 
 [![Add MCP Server youtube-transcript to LM Studio](https://files.lmstudio.ai/deeplink/mcp-install-light.svg)](https://lmstudio.ai/install-mcp?name=youtube-transcript&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLWZyb20iLCJnaXQraHR0cHM6Ly9naXRodWIuY29tL2prYXdhbW90by9tY3AteW91dHViZS10cmFuc2NyaXB0IiwibWNwLXlvdXR1YmUtdHJhbnNjcmlwdCJdfQ%3D%3D)
