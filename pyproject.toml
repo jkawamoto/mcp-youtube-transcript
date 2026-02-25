@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "mcp-youtube-transcript"
-version = "0.5.10"
+version = "0.5.11"
 description = "MCP server retrieving transcripts of YouTube videos"
 readme = "README.md"
 authors = [
@@ -52,7 +52,7 @@ line-length = 120
 indent = 4
 
 [tool.bumpversion]
-current_version = "0.5.10"
+current_version = "0.5.11"
 commit = true
 pre_commit_hooks = [
     "uv sync",
