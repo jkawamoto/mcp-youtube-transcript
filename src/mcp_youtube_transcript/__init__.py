@@ -150,8 +150,45 @@ def _get_transcript_snippets(ctx: AppContext, video_id: str, lang: str) -> Tuple
     soup = BeautifulSoup(page.text, "html.parser")
     title = soup.title.string if soup.title and soup.title.string else "Transcript"
 
-    transcripts = ctx.ytt_api.fetch(video_id, languages=languages)
-    return title, transcripts.snippets
+    try:
+        transcripts = ctx.ytt_api.fetch(video_id, languages=languages)
+        return title, transcripts.snippets
+    except Exception:
+        pass
+
+    # Fallback: try any available language if requested/en not found
+    try:
+        transcript_list = ctx.ytt_api.list(video_id)
+        available_languages: list[str] = []
+        for attr in (
+            "_TranscriptList__manually_created_transcripts",
+            "_TranscriptList__generated_transcripts",
+            "_transcripts",
+        ):
+            data = getattr(transcript_list, attr, None)
+            if isinstance(data, dict):
+                available_languages.extend(list(data.keys()))
+        # de-dupe while preserving order
+        available_languages = list(dict.fromkeys(available_languages))
+
+        # Build priority: requested language -> en -> any other available
+        priority = [lang, "en"]
+        priority.extend([code for code in available_languages if code not in priority])
+
+        for code in priority:
+            try:
+                transcripts = ctx.ytt_api.fetch(video_id, languages=[code])
+                return title, transcripts.snippets
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    raise ValueError(
+        f"Could not retrieve transcript for video {video_id}.\n"
+        f"Requested language: {lang}\n"
+        f"Please check if the video has captions available."
+    )
 
 
 @lru_cache
