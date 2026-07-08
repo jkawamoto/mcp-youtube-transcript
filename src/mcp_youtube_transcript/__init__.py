@@ -129,6 +129,8 @@ def _parse_video_id(url: str) -> str:
     parsed_url = urlparse(url)
     if parsed_url.hostname == "youtu.be":
         return parsed_url.path.lstrip("/")
+    elif parsed_url.path.startswith(("/shorts/", "/embed/", "/live/")):
+        return parsed_url.path.split("/")[2]
     else:
         q = parse_qs(parsed_url.query).get("v")
         if q is None:

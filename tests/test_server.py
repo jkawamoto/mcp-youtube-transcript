@@ -10,7 +10,7 @@ from typing import Any, TypeGuard
 import pytest
 from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig
 
-from mcp_youtube_transcript import server, AppContext
+from mcp_youtube_transcript import server, AppContext, _parse_video_id
 
 
 def is_webshare_proxy_config(obj: Any) -> TypeGuard[WebshareProxyConfig]:
@@ -142,3 +142,29 @@ async def test_new_server_with_https_proxy() -> None:
         assert app_ctx.ytt_api._fetcher._proxy_config.http_url is None
         assert app_ctx.ytt_api._fetcher._proxy_config.https_url == https_proxy
         assert app_ctx.dlp.params.get("proxy") == proxy_config.to_requests_dict()["https"]
+
+
+@pytest.mark.parametrize(
+    "url, expected",
+    [
+        ("https://www.youtube.com/watch?v=tACfRW2f8ao", "tACfRW2f8ao"),
+        ("https://youtu.be/tACfRW2f8ao", "tACfRW2f8ao"),
+        ("https://www.youtube.com/shorts/tACfRW2f8ao", "tACfRW2f8ao"),
+        ("https://www.youtube.com/embed/tACfRW2f8ao", "tACfRW2f8ao"),
+        ("https://www.youtube.com/live/tACfRW2f8ao", "tACfRW2f8ao"),
+    ],
+)
+def test_parse_video_id(url: str, expected: str) -> None:
+    assert _parse_video_id(url) == expected
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://www.youtube.com/watch",
+        "https://www.youtube.com/live",
+    ],
+)
+def test_parse_video_id_invalid(url: str) -> None:
+    with pytest.raises(ValueError):
+        _parse_video_id(url)
