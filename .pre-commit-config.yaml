@@ -15,17 +15,17 @@ repos:
     hooks:
       - id: yamlfmt
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.13
+    rev: v0.15.20
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.21.2
+    rev: v2.25.1
     hooks:
       - id: pyproject-fmt
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+    rev: v2.2.0
     hooks:
       - id: mypy
         args: []

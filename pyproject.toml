@@ -52,9 +52,9 @@ line-length = 120
 indent = 4
 
 [tool.mypy]
+disallow_untyped_defs = true
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
 overrides = [ { module = [
     "yt_dlp.*",
 ], ignore_missing_imports = true } ]
@@ -62,13 +62,13 @@ overrides = [ { module = [
 [tool.bumpversion]
 current_version = "0.6.4"
 commit = true
+files = [
+    { replace = 'version = "{new_version}"', filename = "pyproject.toml", search = 'version = "{current_version}"' },
+    { replace = '"version": "{new_version}"', filename = "manifest.json", search = '"version": "{current_version}"' },
+    { replace = '"version": "{new_version}"', filename = "server.json", search = '"version": "{current_version}"' },
+    { replace = "download/v{new_version}", filename = "server.json", search = "download/v{current_version}" },
+]
 pre_commit_hooks = [
     "uv sync",
     "git add uv.lock",
-]
-files = [
-    { filename = "pyproject.toml", search = 'version = "{current_version}"', replace = 'version = "{new_version}"' },
-    { filename = "manifest.json", search = '"version": "{current_version}"', replace = '"version": "{new_version}"' },
-    { filename = "server.json", search = '"version": "{current_version}"', replace = '"version": "{new_version}"' },
-    { filename = "server.json", search = "download/v{current_version}", replace = "download/v{new_version}" },
 ]
