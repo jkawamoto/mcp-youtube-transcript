@@ -30,7 +30,7 @@ repos:
       - id: mypy
         args: []
         additional_dependencies:
-          - "mcp>=1.9"
+          - "mcp>=2"
           - "youtube-transcript-api>=1.1.0"
           - "beautifulsoup4>=4.13.3"
           - "humanize>=4.13"
