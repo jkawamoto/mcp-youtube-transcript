@@ -74,7 +74,7 @@ async def test_get_transcript(mcp_client_session: ClientSession) -> None:
 
     transcript = Transcript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -97,7 +97,7 @@ async def test_get_transcript_with_language(mcp_client_session: ClientSession) -
 
     transcript = Transcript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -125,7 +125,7 @@ async def test_get_transcript_fallback_language(
 
     transcript = Transcript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.anyio
@@ -133,7 +133,7 @@ async def test_get_transcript_invalid_url(mcp_client_session: ClientSession) -> 
     res = await mcp_client_session.call_tool(
         "get_transcript", arguments={"url": "https://www.youtube.com/watch?vv=abcdefg"}
     )
-    assert res.isError
+    assert res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -142,7 +142,7 @@ async def test_get_transcript_invalid_url(mcp_client_session: ClientSession) -> 
 @pytest.mark.anyio
 async def test_get_transcript_not_found(mcp_client_session: ClientSession) -> None:
     res = await mcp_client_session.call_tool("get_transcript", arguments={"url": "https://www.youtube.com/watch?v=a"})
-    assert res.isError
+    assert res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -165,7 +165,7 @@ async def test_get_transcript_with_short_url(mcp_client_session: ClientSession) 
 
     transcript = Transcript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -187,7 +187,7 @@ async def test_get_transcript_with_response_limit(mcp_client_session_with_respon
             "get_transcript",
             arguments={"url": f"https://www.youtube.com/watch?v={video_id}", "next_cursor": cursor},
         )
-        assert not res.isError
+        assert not res.is_error
         assert isinstance(res.content[0], TextContent)
 
         t = Transcript.model_validate_json(res.content[0].text)
@@ -220,7 +220,7 @@ async def test_get_timed_transcript(mcp_client_session: ClientSession) -> None:
 
     transcript = TimedTranscript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -246,7 +246,7 @@ async def test_get_timed_transcript_with_language(mcp_client_session: ClientSess
 
     transcript = TimedTranscript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -274,7 +274,7 @@ async def test_get_timed_transcript_fallback_language(
 
     transcript = TimedTranscript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.anyio
@@ -282,7 +282,7 @@ async def test_get_timed_transcript_invalid_url(mcp_client_session: ClientSessio
     res = await mcp_client_session.call_tool(
         "get_timed_transcript", arguments={"url": "https://www.youtube.com/watch?vv=abcdefg"}
     )
-    assert res.isError
+    assert res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -293,7 +293,7 @@ async def test_get_timed_transcript_not_found(mcp_client_session: ClientSession)
     res = await mcp_client_session.call_tool(
         "get_timed_transcript", arguments={"url": "https://www.youtube.com/watch?v=a"}
     )
-    assert res.isError
+    assert res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -316,7 +316,7 @@ async def test_get_timed_transcript_with_short_url(mcp_client_session: ClientSes
 
     transcript = TimedTranscript.model_validate_json(res.content[0].text)
     assert transcript == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -338,7 +338,7 @@ async def test_get_timed_transcript_with_response_limit(mcp_client_session_with_
             "get_timed_transcript",
             arguments={"url": f"https://www.youtube.com/watch?v={video_id}", "next_cursor": cursor},
         )
-        assert not res.isError
+        assert not res.is_error
         assert isinstance(res.content[0], TextContent)
 
         t = TimedTranscript.model_validate_json(res.content[0].text)
@@ -378,7 +378,7 @@ async def test_get_video_info(mcp_client_session: ClientSession) -> None:
 
     info = VideoInfo.model_validate_json(res.content[0].text, strict=True)
     assert info == expect
-    assert not res.isError
+    assert not res.is_error
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipping this test on CI")
@@ -394,7 +394,7 @@ async def test_get_available_languages(mcp_client_session: ClientSession) -> Non
         "get_available_languages",
         arguments={"url": f"https://www.youtube.com/watch?v={video_id}"},
     )
-    assert not res.isError
+    assert not res.is_error
 
     langs = [r.text for r in res.content if isinstance(r, TextContent)]
     assert langs == expect

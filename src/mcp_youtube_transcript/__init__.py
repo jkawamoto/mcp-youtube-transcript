@@ -20,8 +20,7 @@ import humanize
 import requests
 from bs4 import BeautifulSoup
 from mcp import ServerSession
-from mcp.server import FastMCP
-from mcp.server.fastmcp import Context
+from mcp.server.mcpserver import MCPServer, Context
 from pydantic import Field, BaseModel, AwareDatetime
 from youtube_transcript_api import YouTubeTranscriptApi, FetchedTranscriptSnippet
 from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig, ProxyConfig
@@ -37,7 +36,7 @@ class AppContext:
 
 
 @asynccontextmanager
-async def _app_lifespan(_server: FastMCP, proxy_config: ProxyConfig | None) -> AsyncIterator[AppContext]:
+async def _app_lifespan(_server: MCPServer, proxy_config: ProxyConfig | None) -> AsyncIterator[AppContext]:
     # Prepare YoutubeDL params with proxy support
     ytdlp_params: dict[str, Any] = {"quiet": True}
     ytdlp_params.update(_proxy_config_to_ytdlp_params(proxy_config))
@@ -180,7 +179,7 @@ def server(
     webshare_proxy_password: str | None = None,
     http_proxy: str | None = None,
     https_proxy: str | None = None,
-) -> FastMCP:
+) -> MCPServer:
     """Initializes the MCP server."""
 
     proxy_config: ProxyConfig | None = None
@@ -189,7 +188,7 @@ def server(
     elif http_proxy or https_proxy:
         proxy_config = GenericProxyConfig(http_proxy, https_proxy)
 
-    mcp = FastMCP("Youtube Transcript", lifespan=partial(_app_lifespan, proxy_config=proxy_config))
+    mcp = MCPServer("Youtube Transcript", lifespan=partial(_app_lifespan, proxy_config=proxy_config))
 
     @mcp.tool()
     async def get_transcript(
