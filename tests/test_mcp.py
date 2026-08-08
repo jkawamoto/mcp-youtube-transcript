@@ -242,7 +242,6 @@ async def test_get_timed_transcript_with_language(mcp_client_session: ClientSess
         arguments={"url": f"https://www.youtube.com/watch?v={video_id}", "lang": "ja"},
     )
     assert isinstance(res.content[0], TextContent)
-    print(res.content[0].text)
 
     transcript = TimedTranscript.model_validate_json(res.content[0].text)
     assert transcript == expect

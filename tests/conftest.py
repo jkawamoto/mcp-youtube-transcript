@@ -11,3 +11,9 @@ import pytest
 @pytest.fixture(scope="module")
 def anyio_backend() -> str:
     return "asyncio"
+
+@pytest.fixture(scope="module")
+def vcr_config():
+    return {
+        "allow_playback_repeats": True,
+    }
