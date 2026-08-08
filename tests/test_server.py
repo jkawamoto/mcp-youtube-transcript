@@ -1,6 +1,6 @@
 #  test_server.py
 #
-#  Copyright (c) 2025 Junpei Kawamoto
+#  Copyright (c) 2025-2026 Junpei Kawamoto
 #
 #  This software is released under the MIT License.
 #
@@ -8,9 +8,9 @@
 from typing import Any, TypeGuard
 
 import pytest
-from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig
+from youtube_transcript_api.proxies import GenericProxyConfig, WebshareProxyConfig
 
-from mcp_youtube_transcript import server, AppContext, _parse_video_id
+from mcp_youtube_transcript import AppContext, _parse_video_id, server
 
 
 def is_webshare_proxy_config(obj: Any) -> TypeGuard[WebshareProxyConfig]:
