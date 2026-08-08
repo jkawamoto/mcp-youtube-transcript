@@ -5,21 +5,21 @@
 #  This software is released under the MIT License.
 #
 #  http://opensource.org/licenses/mit-license.php
-from datetime import datetime, timedelta, timezone
 import os
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+from datetime import datetime, timedelta, timezone
 
 import humanize
 import pytest
 import requests
+import yt_dlp
 from bs4 import BeautifulSoup
-from mcp import StdioServerParameters, stdio_client, ClientSession
+from mcp import ClientSession, StdioServerParameters, stdio_client
 from mcp.types import TextContent
 from youtube_transcript_api import YouTubeTranscriptApi
-import yt_dlp
 from yt_dlp.extractor.youtube import YoutubeIE
 
-from mcp_youtube_transcript import Transcript, VideoInfo, _parse_time_info, TimedTranscript, TranscriptSnippet
+from mcp_youtube_transcript import TimedTranscript, Transcript, TranscriptSnippet, VideoInfo, _parse_time_info
 
 
 def fetch_title(url: str, lang: str) -> str:
@@ -31,19 +31,17 @@ def fetch_title(url: str, lang: str) -> str:
 @pytest.fixture(scope="module")
 async def mcp_client_session() -> AsyncGenerator[ClientSession, None]:
     params = StdioServerParameters(command="uv", args=["run", "mcp-youtube-transcript", "--response-limit", "-1"])
-    async with stdio_client(params) as streams:
-        async with ClientSession(streams[0], streams[1]) as session:
-            await session.initialize()
-            yield session
+    async with stdio_client(params) as streams, ClientSession(streams[0], streams[1]) as session:
+        await session.initialize()
+        yield session
 
 
 @pytest.fixture(scope="module")
 async def mcp_client_session_with_response_limit() -> AsyncGenerator[ClientSession, None]:
     params = StdioServerParameters(command="uv", args=["run", "mcp-youtube-transcript", "--response-limit", "3000"])
-    async with stdio_client(params) as streams:
-        async with ClientSession(streams[0], streams[1]) as session:
-            await session.initialize()
-            yield session
+    async with stdio_client(params) as streams, ClientSession(streams[0], streams[1]) as session:
+        await session.initialize()
+        yield session
 
 
 @pytest.mark.anyio
@@ -63,7 +61,7 @@ async def test_get_transcript(mcp_client_session: ClientSession) -> None:
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
     res = await mcp_client_session.call_tool(
@@ -86,7 +84,7 @@ async def test_get_transcript_with_language(mcp_client_session: ClientSession) -
 
     expect = Transcript(
         title=fetch_title(video_id, "ja"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id, ["ja"]))),
+        transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id, ["ja"])),
     )
 
     res = await mcp_client_session.call_tool(
@@ -111,7 +109,7 @@ async def test_get_transcript_fallback_language(
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
     res = await mcp_client_session.call_tool(
@@ -154,7 +152,7 @@ async def test_get_transcript_with_short_url(mcp_client_session: ClientSession) 
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
     res = await mcp_client_session.call_tool(
@@ -177,7 +175,7 @@ async def test_get_transcript_with_response_limit(mcp_client_session_with_respon
 
     expect = Transcript(
         title=fetch_title(video_id, "en"),
-        transcript="\n".join((item.text for item in YouTubeTranscriptApi().fetch(video_id))),
+        transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
     transcript = ""

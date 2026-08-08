@@ -7,23 +7,23 @@
 #  http://opensource.org/licenses/mit-license.php
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache, partial
 from itertools import islice
-from typing import Any, AsyncIterator, Tuple
-from typing import Final
-from urllib.parse import urlparse, parse_qs
+from typing import Any, Final
+from urllib.parse import parse_qs, urlparse
 
 import humanize
 import requests
 from bs4 import BeautifulSoup
 from mcp import ServerSession
-from mcp.server.mcpserver import MCPServer, Context
-from pydantic import Field, BaseModel, AwareDatetime
-from youtube_transcript_api import YouTubeTranscriptApi, FetchedTranscriptSnippet
-from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig, ProxyConfig
+from mcp.server.mcpserver import Context, MCPServer
+from pydantic import AwareDatetime, BaseModel, Field
+from youtube_transcript_api import FetchedTranscriptSnippet, YouTubeTranscriptApi
+from youtube_transcript_api.proxies import GenericProxyConfig, ProxyConfig, WebshareProxyConfig
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
 
@@ -90,9 +90,9 @@ class VideoInfo(BaseModel):
     duration: str = Field(description="Duration of the video")
 
 
-def _parse_time_info(date: int, timestamp: int, duration: int) -> Tuple[datetime, str]:
-    parsed_date = datetime.strptime(str(date), "%Y%m%d").date()
-    parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()
+def _parse_time_info(date: int, timestamp: int, duration: int) -> tuple[datetime, str]:
+    parsed_date = datetime.strptime(str(date), "%Y%m%d").date()  # noqa: DTZ007
+    parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()  # noqa: DTZ007
     upload_date = datetime.combine(parsed_date, parsed_time, timezone.utc)
     duration_str = humanize.naturaldelta(timedelta(seconds=duration))
     return upload_date, duration_str
@@ -116,9 +116,9 @@ def _proxy_config_to_ytdlp_params(proxy_config: ProxyConfig | None) -> dict[str,
 
     # yt-dlp accepts a single 'proxy' parameter
     # Prefer HTTPS over HTTP since YouTube uses HTTPS
-    if "https" in proxy_dict and proxy_dict["https"]:
+    if proxy_dict.get("https"):
         return {"proxy": proxy_dict["https"]}
-    elif "http" in proxy_dict and proxy_dict["http"]:
+    elif proxy_dict.get("http"):
         return {"proxy": proxy_dict["http"]}
 
     return {}
@@ -138,7 +138,7 @@ def _parse_video_id(url: str) -> str:
 
 
 @lru_cache
-def _get_transcript_snippets(ctx: AppContext, video_id: str, lang: str) -> Tuple[str, list[FetchedTranscriptSnippet]]:
+def _get_transcript_snippets(ctx: AppContext, video_id: str, lang: str) -> tuple[str, list[FetchedTranscriptSnippet]]:
     if lang == "en":
         languages = ["en"]
     else:
@@ -262,4 +262,4 @@ def server(
     return mcp
 
 
-__all__: Final = ["server", "Transcript", "TimedTranscript", "TranscriptSnippet", "VideoInfo"]
+__all__: Final = ["TimedTranscript", "Transcript", "TranscriptSnippet", "VideoInfo", "server"]
