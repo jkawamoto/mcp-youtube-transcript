@@ -1,5 +1,7 @@
 # YouTube Transcript MCP Server
 
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.jkawamoto%2Fmcp-youtube-transcript.svg)](https://mcptoplist.com/server/io.github.jkawamoto%2Fmcp-youtube-transcript)
+
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Python Application](https://github.com/jkawamoto/mcp-youtube-transcript/actions/workflows/python-app.yaml/badge.svg)](https://github.com/jkawamoto/mcp-youtube-transcript/actions/workflows/python-app.yaml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
