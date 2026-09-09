@@ -1,13 +1,13 @@
 #  cli.py
 #
-#  Copyright (c) 2025 Junpei Kawamoto
+#  Copyright (c) 2025-2026 Junpei Kawamoto
 #
 #  This software is released under the MIT License.
 #
 #  http://opensource.org/licenses/mit-license.php
 import logging
 
-import click
+import rich_click as click
 
 from mcp_youtube_transcript import server
 
