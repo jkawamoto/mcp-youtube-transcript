@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "beautifulsoup4>=4.13.3",
@@ -56,8 +57,8 @@ disallow_untyped_defs = true
 warn_return_any = true
 warn_unused_configs = true
 overrides = [ { module = [
-    "yt_dlp.*",
-], ignore_missing_imports = true } ]
+        "yt_dlp.*",
+    ], ignore_missing_imports = true } ]
 
 [tool.bumpversion]
 current_version = "0.7.1"
