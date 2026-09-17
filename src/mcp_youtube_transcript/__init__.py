@@ -21,7 +21,7 @@ import requests
 from mcp import ServerSession
 from mcp.server.mcpserver import Context, MCPServer
 from pydantic import AwareDatetime, BaseModel, Field
-from youtube_transcript_api import FetchedTranscriptSnippet, YouTubeTranscriptApi
+from youtube_transcript_api import FetchedTranscriptSnippet, TranscriptList, YouTubeTranscriptApi
 from youtube_transcript_api.proxies import GenericProxyConfig, ProxyConfig, WebshareProxyConfig
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
@@ -137,6 +137,11 @@ def _parse_video_id(url: str) -> str:
 
 
 @lru_cache
+def _get_transcript_list(ctx: AppContext, video_id: str) -> TranscriptList:
+    return ctx.ytt_api.list(video_id)
+
+
+@lru_cache
 def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tuple[str, list[FetchedTranscriptSnippet]]:
     if lang == "en":
         languages = ["en"]
@@ -144,7 +149,7 @@ def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tupl
         languages = [lang, "en"]
 
     info = _get_video_info(ctx, video_url)
-    transcripts = ctx.ytt_api.fetch(_parse_video_id(video_url), languages=languages)
+    transcripts = _get_transcript_list(ctx, _parse_video_id(video_url)).find_transcript(languages).fetch()
     return info.title, transcripts.snippets
 
 
@@ -159,11 +164,6 @@ def _get_video_info(ctx: AppContext, video_url: str) -> VideoInfo:
         upload_date=upload_date,
         duration=duration,
     )
-
-
-@lru_cache
-def _get_available_languages(ctx: AppContext, video_id: str) -> list[str]:
-    return [str(t) for t in ctx.ytt_api.list(video_id)]
 
 
 def server(
@@ -250,7 +250,7 @@ def server(
         url: str = Field(description="The URL of the YouTube video"),
     ) -> list[str]:
         """Retrieves the available languages for the video."""
-        return _get_available_languages(ctx.request_context.lifespan_context, _parse_video_id(url))
+        return [str(t) for t in _get_transcript_list(ctx.request_context.lifespan_context, _parse_video_id(url))]
 
     return mcp
 
