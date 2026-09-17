@@ -23,7 +23,6 @@ classifiers = [
     "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
-    "beautifulsoup4>=4.13.3",
     "humanize>=4.13",
     "mcp>=2",
     "pydantic>=2.10.6",

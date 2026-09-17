@@ -18,11 +18,10 @@ from urllib.parse import parse_qs, urlparse
 
 import humanize
 import requests
-from bs4 import BeautifulSoup
 from mcp import ServerSession
 from mcp.server.mcpserver import Context, MCPServer
 from pydantic import AwareDatetime, BaseModel, Field
-from youtube_transcript_api import FetchedTranscriptSnippet, YouTubeTranscriptApi
+from youtube_transcript_api import FetchedTranscriptSnippet, TranscriptList, YouTubeTranscriptApi
 from youtube_transcript_api.proxies import GenericProxyConfig, ProxyConfig, WebshareProxyConfig
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
@@ -138,39 +137,33 @@ def _parse_video_id(url: str) -> str:
 
 
 @lru_cache
-def _get_transcript_snippets(ctx: AppContext, video_id: str, lang: str) -> tuple[str, list[FetchedTranscriptSnippet]]:
+def _get_transcript_list(ctx: AppContext, video_id: str) -> TranscriptList:
+    return ctx.ytt_api.list(video_id)
+
+
+@lru_cache
+def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tuple[str, list[FetchedTranscriptSnippet]]:
     if lang == "en":
         languages = ["en"]
     else:
         languages = [lang, "en"]
 
-    page = ctx.http_client.get(
-        f"https://www.youtube.com/watch?v={video_id}", headers={"Accept-Language": ",".join(languages)}
-    )
-    page.raise_for_status()
-    soup = BeautifulSoup(page.text, "html.parser")
-    title = soup.title.string if soup.title and soup.title.string else "Transcript"
-
-    transcripts = ctx.ytt_api.fetch(video_id, languages=languages)
-    return title, transcripts.snippets
+    info = _get_video_info(ctx, video_url)
+    transcripts = _get_transcript_list(ctx, _parse_video_id(video_url)).find_transcript(languages).fetch()
+    return info.title, transcripts.snippets
 
 
 @lru_cache
 def _get_video_info(ctx: AppContext, video_url: str) -> VideoInfo:
     res = ctx.dlp.extract_info(video_url, download=False)
-    upload_date, duration = _parse_time_info(res["upload_date"], res["timestamp"], res["duration"])
+    upload_date, duration = _parse_time_info(res["upload_date"], int(res["timestamp"] or 0), res["duration"] or 0)
     return VideoInfo(
-        title=res["title"],
-        description=res["description"],
-        uploader=res["uploader"],
+        title=res["title"] or "",
+        description=res["description"] or "",
+        uploader=res["uploader"] or "",
         upload_date=upload_date,
         duration=duration,
     )
-
-
-@lru_cache
-def _get_available_languages(ctx: AppContext, video_id: str) -> list[str]:
-    return [str(t) for t in ctx.ytt_api.list(video_id)]
 
 
 def server(
@@ -199,7 +192,7 @@ def server(
     ) -> Transcript:
         """Retrieves the transcript of a YouTube video."""
 
-        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, _parse_video_id(url), lang)
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, url, lang)
         transcripts = (item.text for item in snippets)
 
         if response_limit is None or response_limit <= 0:
@@ -224,7 +217,7 @@ def server(
     ) -> TimedTranscript:
         """Retrieves the transcript of a YouTube video with timestamps."""
 
-        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, _parse_video_id(url), lang)
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, url, lang)
 
         if response_limit is None or response_limit <= 0:
             return TimedTranscript(
@@ -257,7 +250,7 @@ def server(
         url: str = Field(description="The URL of the YouTube video"),
     ) -> list[str]:
         """Retrieves the available languages for the video."""
-        return _get_available_languages(ctx.request_context.lifespan_context, _parse_video_id(url))
+        return [str(t) for t in _get_transcript_list(ctx.request_context.lifespan_context, _parse_video_id(url))]
 
     return mcp
 
