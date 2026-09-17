@@ -18,7 +18,6 @@ from urllib.parse import parse_qs, urlparse
 
 import humanize
 import requests
-from bs4 import BeautifulSoup
 from mcp import ServerSession
 from mcp.server.mcpserver import Context, MCPServer
 from pydantic import AwareDatetime, BaseModel, Field
@@ -138,21 +137,15 @@ def _parse_video_id(url: str) -> str:
 
 
 @lru_cache
-def _get_transcript_snippets(ctx: AppContext, video_id: str, lang: str) -> tuple[str, list[FetchedTranscriptSnippet]]:
+def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tuple[str, list[FetchedTranscriptSnippet]]:
     if lang == "en":
         languages = ["en"]
     else:
         languages = [lang, "en"]
 
-    page = ctx.http_client.get(
-        f"https://www.youtube.com/watch?v={video_id}", headers={"Accept-Language": ",".join(languages)}
-    )
-    page.raise_for_status()
-    soup = BeautifulSoup(page.text, "html.parser")
-    title = soup.title.string if soup.title and soup.title.string else "Transcript"
-
-    transcripts = ctx.ytt_api.fetch(video_id, languages=languages)
-    return title, transcripts.snippets
+    info = _get_video_info(ctx, video_url)
+    transcripts = ctx.ytt_api.fetch(_parse_video_id(video_url), languages=languages)
+    return info.title, transcripts.snippets
 
 
 @lru_cache
@@ -199,7 +192,7 @@ def server(
     ) -> Transcript:
         """Retrieves the transcript of a YouTube video."""
 
-        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, _parse_video_id(url), lang)
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, url, lang)
         transcripts = (item.text for item in snippets)
 
         if response_limit is None or response_limit <= 0:
@@ -224,7 +217,7 @@ def server(
     ) -> TimedTranscript:
         """Retrieves the transcript of a YouTube video with timestamps."""
 
-        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, _parse_video_id(url), lang)
+        title, snippets = _get_transcript_snippets(ctx.request_context.lifespan_context, url, lang)
 
         if response_limit is None or response_limit <= 0:
             return TimedTranscript(

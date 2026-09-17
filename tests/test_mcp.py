@@ -11,9 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 import humanize
 import pytest
-import requests
 import yt_dlp
-from bs4 import BeautifulSoup
 from mcp import ClientSession, StdioServerParameters, stdio_client
 from mcp.types import TextContent
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -22,10 +20,18 @@ from yt_dlp.extractor.youtube import YoutubeIE
 from mcp_youtube_transcript import TimedTranscript, Transcript, TranscriptSnippet, VideoInfo, _parse_time_info
 
 
-def fetch_title(url: str, lang: str) -> str:
-    res = requests.get(f"https://www.youtube.com/watch?v={url}", headers={"Accept-Language": lang})
-    soup = BeautifulSoup(res.text, "html.parser")
-    return soup.title.string or "" if soup.title else ""
+def fetch_video_info(video_id: str) -> VideoInfo:
+    dlp = yt_dlp.YoutubeDL(params={"quiet": True}, auto_init=False)
+    dlp.add_info_extractor(YoutubeIE())
+    dlp_res = dlp.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+    upload_date, duration = _parse_time_info(dlp_res["upload_date"], dlp_res["timestamp"], dlp_res["duration"])
+    return VideoInfo(
+        title=dlp_res["title"],
+        description=dlp_res["description"],
+        uploader=dlp_res["uploader"],
+        upload_date=upload_date,
+        duration=duration,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -60,7 +66,7 @@ async def test_get_transcript(mcp_client_session: ClientSession) -> None:
     video_id = "LPZh9BOjkQs"
 
     expect = Transcript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
@@ -83,7 +89,7 @@ async def test_get_transcript_with_language(mcp_client_session: ClientSession) -
     video_id = "WjAXZkQSE2U"
 
     expect = Transcript(
-        title=fetch_title(video_id, "ja"),
+        title=fetch_video_info(video_id).title,
         transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id, ["ja"])),
     )
 
@@ -108,7 +114,7 @@ async def test_get_transcript_fallback_language(
     video_id = "LPZh9BOjkQs"
 
     expect = Transcript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
@@ -151,7 +157,7 @@ async def test_get_transcript_with_short_url(mcp_client_session: ClientSession) 
     video_id = "LPZh9BOjkQs"
 
     expect = Transcript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
@@ -174,7 +180,7 @@ async def test_get_transcript_with_response_limit(mcp_client_session_with_respon
     video_id = "LPZh9BOjkQs"
 
     expect = Transcript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         transcript="\n".join(item.text for item in YouTubeTranscriptApi().fetch(video_id)),
     )
 
@@ -206,7 +212,7 @@ async def test_get_timed_transcript(mcp_client_session: ClientSession) -> None:
     video_id = "LPZh9BOjkQs"
 
     expect = TimedTranscript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
     )
 
@@ -229,7 +235,7 @@ async def test_get_timed_transcript_with_language(mcp_client_session: ClientSess
     video_id = "WjAXZkQSE2U"
 
     expect = TimedTranscript(
-        title=fetch_title(video_id, "ja"),
+        title=fetch_video_info(video_id).title,
         snippets=[
             TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id, ["ja"])
         ],
@@ -256,7 +262,7 @@ async def test_get_timed_transcript_fallback_language(
     video_id = "LPZh9BOjkQs"
 
     expect = TimedTranscript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
     )
 
@@ -301,7 +307,7 @@ async def test_get_timed_transcript_with_short_url(mcp_client_session: ClientSes
     video_id = "LPZh9BOjkQs"
 
     expect = TimedTranscript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
     )
 
@@ -324,7 +330,7 @@ async def test_get_timed_transcript_with_response_limit(mcp_client_session_with_
     video_id = "LPZh9BOjkQs"
 
     expect = TimedTranscript(
-        title=fetch_title(video_id, "en"),
+        title=fetch_video_info(video_id).title,
         snippets=[TranscriptSnippet.from_fetched_transcript_snippet(s) for s in YouTubeTranscriptApi().fetch(video_id)],
     )
 
@@ -353,17 +359,7 @@ async def test_get_timed_transcript_with_response_limit(mcp_client_session_with_
 async def test_get_video_info(mcp_client_session: ClientSession) -> None:
     video_id = "LPZh9BOjkQs"
 
-    dlp = yt_dlp.YoutubeDL(params={"quiet": True}, auto_init=False)
-    dlp.add_info_extractor(YoutubeIE())
-    dlp_res = dlp.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-    upload_date, duration = _parse_time_info(dlp_res["upload_date"], dlp_res["timestamp"], dlp_res["duration"])
-    expect = VideoInfo(
-        title=dlp_res["title"],
-        description=dlp_res["description"],
-        uploader=dlp_res["uploader"],
-        upload_date=upload_date,
-        duration=duration,
-    )
+    expect = fetch_video_info(video_id)
 
     res = await mcp_client_session.call_tool(
         "get_video_info",
