@@ -156,11 +156,11 @@ def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tupl
 @lru_cache
 def _get_video_info(ctx: AppContext, video_url: str) -> VideoInfo:
     res = ctx.dlp.extract_info(video_url, download=False)
-    upload_date, duration = _parse_time_info(res["upload_date"], res["timestamp"], res["duration"])
+    upload_date, duration = _parse_time_info(res["upload_date"], int(res["timestamp"] or 0), res["duration"] or 0)
     return VideoInfo(
-        title=res["title"],
-        description=res["description"],
-        uploader=res["uploader"],
+        title=res["title"] or "",
+        description=res["description"] or "",
+        uploader=res["uploader"] or "",
         upload_date=upload_date,
         duration=duration,
     )

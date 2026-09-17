@@ -24,11 +24,13 @@ def fetch_video_info(video_id: str) -> VideoInfo:
     dlp = yt_dlp.YoutubeDL(params={"quiet": True}, auto_init=False)
     dlp.add_info_extractor(YoutubeIE())
     dlp_res = dlp.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-    upload_date, duration = _parse_time_info(dlp_res["upload_date"], dlp_res["timestamp"], dlp_res["duration"])
+    upload_date, duration = _parse_time_info(
+        dlp_res["upload_date"], int(dlp_res["timestamp"] or 0), dlp_res["duration"] or 0
+    )
     return VideoInfo(
-        title=dlp_res["title"],
-        description=dlp_res["description"],
-        uploader=dlp_res["uploader"],
+        title=dlp_res["title"] or "",
+        description=dlp_res["description"] or "",
+        uploader=dlp_res["uploader"] or "",
         upload_date=upload_date,
         duration=duration,
     )
