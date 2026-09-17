@@ -29,7 +29,6 @@ from yt_dlp.extractor.youtube import YoutubeIE
 
 @dataclass(frozen=True)
 class AppContext:
-    http_client: requests.Session
     ytt_api: YouTubeTranscriptApi
     dlp: YoutubeDL
 
@@ -43,7 +42,7 @@ async def _app_lifespan(_server: MCPServer, proxy_config: ProxyConfig | None) ->
     with requests.Session() as http_client, YoutubeDL(params=ytdlp_params, auto_init=False) as dlp:
         ytt_api = YouTubeTranscriptApi(http_client=http_client, proxy_config=proxy_config)
         dlp.add_info_extractor(YoutubeIE())
-        yield AppContext(http_client=http_client, ytt_api=ytt_api, dlp=dlp)
+        yield AppContext(ytt_api=ytt_api, dlp=dlp)
 
 
 class Transcript(BaseModel):

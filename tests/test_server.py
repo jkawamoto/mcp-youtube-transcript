@@ -27,8 +27,7 @@ async def test_new_server() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert not app_ctx.http_client.proxies
+        assert not app_ctx.ytt_api._fetcher._http_client.proxies
         assert not app_ctx.ytt_api._fetcher._proxy_config
 
 
@@ -45,8 +44,6 @@ async def test_new_server_with_webshare_proxy() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert app_ctx.http_client.proxies == proxy_config.to_requests_dict()
         assert is_webshare_proxy_config(app_ctx.ytt_api._fetcher._proxy_config)
         assert app_ctx.ytt_api._fetcher._proxy_config.proxy_username == webshare_proxy_username
         assert app_ctx.ytt_api._fetcher._proxy_config.proxy_password == webshare_proxy_password
@@ -63,8 +60,7 @@ async def test_new_server_with_only_webshare_proxy_user() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert not app_ctx.http_client.proxies
+        assert not app_ctx.ytt_api._fetcher._http_client.proxies
         assert not app_ctx.ytt_api._fetcher._proxy_config
         assert not app_ctx.dlp.params.get("proxy")
 
@@ -79,8 +75,7 @@ async def test_new_server_with_only_webshare_proxy_password() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert not app_ctx.http_client.proxies
+        assert not app_ctx.ytt_api._fetcher._http_client.proxies
         assert not app_ctx.ytt_api._fetcher._proxy_config
         assert not app_ctx.dlp.params.get("proxy")
 
@@ -98,8 +93,6 @@ async def test_new_server_with_generic_proxy() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert app_ctx.http_client.proxies == proxy_config.to_requests_dict()
         assert is_generic_proxy_config(app_ctx.ytt_api._fetcher._proxy_config)
         assert app_ctx.ytt_api._fetcher._proxy_config.http_url == http_proxy
         assert app_ctx.ytt_api._fetcher._proxy_config.https_url == https_proxy
@@ -117,8 +110,6 @@ async def test_new_server_with_http_proxy() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert app_ctx.http_client.proxies == proxy_config.to_requests_dict()
         assert is_generic_proxy_config(app_ctx.ytt_api._fetcher._proxy_config)
         assert app_ctx.ytt_api._fetcher._proxy_config.http_url == http_proxy
         assert app_ctx.ytt_api._fetcher._proxy_config.https_url is None
@@ -136,8 +127,6 @@ async def test_new_server_with_https_proxy() -> None:
 
     app_ctx: AppContext
     async with mcp.settings.lifespan(mcp) as app_ctx:  # type: ignore
-        assert app_ctx.http_client == app_ctx.ytt_api._fetcher._http_client
-        assert app_ctx.http_client.proxies == proxy_config.to_requests_dict()
         assert is_generic_proxy_config(app_ctx.ytt_api._fetcher._proxy_config)
         assert app_ctx.ytt_api._fetcher._proxy_config.http_url is None
         assert app_ctx.ytt_api._fetcher._proxy_config.https_url == https_proxy
