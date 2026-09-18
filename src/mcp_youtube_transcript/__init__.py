@@ -34,7 +34,19 @@ class AppContext:
 
 
 @asynccontextmanager
-async def _app_lifespan(_server: MCPServer, proxy_config: ProxyConfig | None) -> AsyncIterator[AppContext]:
+async def _app_lifespan(
+    _server: MCPServer,
+    webshare_proxy_username: str | None = None,
+    webshare_proxy_password: str | None = None,
+    http_proxy: str | None = None,
+    https_proxy: str | None = None,
+) -> AsyncIterator[AppContext]:
+    proxy_config: ProxyConfig | None = None
+    if webshare_proxy_username and webshare_proxy_password:
+        proxy_config = WebshareProxyConfig(webshare_proxy_username, webshare_proxy_password)
+    elif http_proxy or https_proxy:
+        proxy_config = GenericProxyConfig(http_proxy, https_proxy)
+
     # Prepare YoutubeDL params with proxy support
     ytdlp_params: dict[str, Any] = {"quiet": True}
     ytdlp_params.update(_proxy_config_to_ytdlp_params(proxy_config))
@@ -173,14 +185,16 @@ def server(
     https_proxy: str | None = None,
 ) -> MCPServer:
     """Initializes the MCP server."""
-
-    proxy_config: ProxyConfig | None = None
-    if webshare_proxy_username and webshare_proxy_password:
-        proxy_config = WebshareProxyConfig(webshare_proxy_username, webshare_proxy_password)
-    elif http_proxy or https_proxy:
-        proxy_config = GenericProxyConfig(http_proxy, https_proxy)
-
-    mcp = MCPServer("Youtube Transcript", lifespan=partial(_app_lifespan, proxy_config=proxy_config))
+    mcp = MCPServer(
+        "YouTube Transcript",
+        lifespan=partial(
+            _app_lifespan,
+            webshare_proxy_username=webshare_proxy_username,
+            webshare_proxy_password=webshare_proxy_password,
+            http_proxy=http_proxy,
+            https_proxy=https_proxy,
+        ),
+    )
 
     @mcp.tool()
     async def get_transcript(

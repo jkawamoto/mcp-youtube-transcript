@@ -47,5 +47,11 @@ def main(
     logger = logging.getLogger(__name__)
 
     logger.info("starting Youtube Transcript MCP server")
-    server(response_limit, webshare_proxy_username, webshare_proxy_password, http_proxy, https_proxy).run()
+    server(
+        response_limit,
+        webshare_proxy_username=webshare_proxy_username,
+        webshare_proxy_password=webshare_proxy_password,
+        http_proxy=http_proxy,
+        https_proxy=https_proxy,
+    ).run()
     logger.info("closed Youtube Transcript MCP server")
