@@ -31,6 +31,12 @@ from mcp_youtube_transcript import server
     envvar="WEBSHARE_PROXY_PASSWORD",
     help="Webshare proxy service password.",
 )
+@click.option(
+    "--scrapingant-api-token",
+    metavar="TOKEN",
+    envvar="SCRAPINGANT_API_TOKEN",
+    help="ScrapingAnt API token",
+)
 @click.option("--http-proxy", metavar="URL", envvar="HTTP_PROXY", help="HTTP proxy server URL.")
 @click.option("--https-proxy", metavar="URL", envvar="HTTPS_PROXY", help="HTTPS proxy server URL.")
 @click.version_option()
@@ -38,6 +44,7 @@ def main(
     response_limit: int | None,
     webshare_proxy_username: str | None,
     webshare_proxy_password: str | None,
+    scrapingant_api_token: str | None,
     http_proxy: str | None,
     https_proxy: str | None,
 ) -> None:
@@ -51,6 +58,7 @@ def main(
         response_limit,
         webshare_proxy_username=webshare_proxy_username,
         webshare_proxy_password=webshare_proxy_password,
+        scrapingant_api_token=scrapingant_api_token,
         http_proxy=http_proxy,
         https_proxy=https_proxy,
     ).run()
