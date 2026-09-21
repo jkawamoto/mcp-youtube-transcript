@@ -26,6 +26,10 @@ from youtube_transcript_api.proxies import GenericProxyConfig, ProxyConfig, Webs
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
 
+SCRAPINGANT_PROXY_URL = (
+    "https://scrapingant&browser=false&forward_headers=true&proxy_type=residential:{api_token}@proxy.scrapingant.com"
+)
+
 
 @dataclass(frozen=True)
 class AppContext:
@@ -38,20 +42,25 @@ async def _app_lifespan(
     _server: MCPServer,
     webshare_proxy_username: str | None = None,
     webshare_proxy_password: str | None = None,
+    scrapingant_api_token: str | None = None,
     http_proxy: str | None = None,
     https_proxy: str | None = None,
 ) -> AsyncIterator[AppContext]:
     proxy_config: ProxyConfig | None = None
+    ytdlp_params: dict[str, Any] = {"quiet": True}
     if webshare_proxy_username and webshare_proxy_password:
         proxy_config = WebshareProxyConfig(webshare_proxy_username, webshare_proxy_password)
+    elif scrapingant_api_token:
+        proxy_config = GenericProxyConfig(https_url=SCRAPINGANT_PROXY_URL.format(api_token=scrapingant_api_token))
+        ytdlp_params["nocheckcertificate"] = True
     elif http_proxy or https_proxy:
         proxy_config = GenericProxyConfig(http_proxy, https_proxy)
-
-    # Prepare YoutubeDL params with proxy support
-    ytdlp_params: dict[str, Any] = {"quiet": True}
     ytdlp_params.update(_proxy_config_to_ytdlp_params(proxy_config))
 
     with requests.Session() as http_client, YoutubeDL(params=ytdlp_params, auto_init=False) as dlp:
+        if scrapingant_api_token:
+            http_client.verify = False
+
         ytt_api = YouTubeTranscriptApi(http_client=http_client, proxy_config=proxy_config)
         dlp.add_info_extractor(YoutubeIE())
         yield AppContext(ytt_api=ytt_api, dlp=dlp)
@@ -181,6 +190,7 @@ def server(
     response_limit: int | None = None,
     webshare_proxy_username: str | None = None,
     webshare_proxy_password: str | None = None,
+    scrapingant_api_token: str | None = None,
     http_proxy: str | None = None,
     https_proxy: str | None = None,
 ) -> MCPServer:
@@ -191,6 +201,7 @@ def server(
             _app_lifespan,
             webshare_proxy_username=webshare_proxy_username,
             webshare_proxy_password=webshare_proxy_password,
+            scrapingant_api_token=scrapingant_api_token,
             http_proxy=http_proxy,
             https_proxy=https_proxy,
         ),
