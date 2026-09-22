@@ -28,6 +28,7 @@
       "env": {
         "WEBSHARE_PROXY_USERNAME": "${user_config.webshare_proxy_username}",
         "WEBSHARE_PROXY_PASSWORD": "${user_config.webshare_proxy_password}",
+        "SCRAPINGANT_API_TOKEN": "${user_config.scrapingant_api_token}",
         "HTTP_PROXY": "${user_config.http_proxy}",
         "HTTPS_PROXY": "${user_config.https_proxy}"
       }
@@ -75,6 +76,14 @@
       "type": "string",
       "title": "Webshare proxy service password",
       "description": "Password for authentication with Webshare proxy service",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "scrapingant_api_token": {
+      "type": "string",
+      "title": "ScrapingAnt API token",
+      "description": "API token for authentication with ScrapingAnt",
       "required": false,
       "sensitive": true,
       "default": ""
