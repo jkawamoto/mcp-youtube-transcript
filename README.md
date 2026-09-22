@@ -123,10 +123,21 @@ For example, the configuration below splits responses to contain no more than 15
 ## Using Proxy Servers
 In environments where access to YouTube is restricted, you can use proxy servers.
 
+### ScrapingAnt
+When using [ScrapingAnt](https://www.scrapingant.com/),
+set the API token using either the environment variable `SCRAPINGANT_API_TOKEN`,
+or the command line argument `--scrapingant-api-token`.
+
+Accessing YouTube requires a paid ScrapingAnt subscription.
+YouTube access requires residential proxies, which consume more ScrapingAnt credits than standard proxy requests.
+See [the ScrapingAnt credit cost documentation](https://docs.scrapingant.com/credits-cost) for details.
+
+### Webshare
 When using [Webshare](https://www.webshare.io/), set the username and password for the Residential Proxy using either
 the environment variables `WEBSHARE_PROXY_USERNAME` and `WEBSHARE_PROXY_PASSWORD`,
 or the command line arguments `--webshare-proxy-username` and `--webshare-proxy-password`.
 
+### Other proxy servers
 When using other proxy servers, set the proxy server URL using either the environment variables `HTTP_PROXY` or
 `HTTPS_PROXY`, or the command line arguments `--http-proxy` or `--https-proxy`.
 
