@@ -47,7 +47,18 @@ async def _app_lifespan(
     https_proxy: str | None = None,
 ) -> AsyncIterator[AppContext]:
     proxy_config: ProxyConfig | None = None
-    ytdlp_params: dict[str, Any] = {"quiet": True}
+    ytdlp_params: dict[str, Any] = {
+        "skip_download": True,
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["visionos"],
+                "skip": ["hls", "dash", "translated_subs"],
+            },
+        },
+    }
     if webshare_proxy_username and webshare_proxy_password:
         proxy_config = WebshareProxyConfig(webshare_proxy_username, webshare_proxy_password)
     elif scrapingant_api_token:
