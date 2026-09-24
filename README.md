@@ -124,11 +124,11 @@ For example, the configuration below splits responses to contain no more than 15
 In environments where access to YouTube is restricted, you can use proxy servers.
 
 ### ScrapingAnt
-When using [ScrapingAnt](https://www.scrapingant.com/),
-set the API token using either the environment variable `SCRAPINGANT_API_TOKEN`,
-or the command line argument `--scrapingant-api-token`.
+When using [ScrapingAnt](https://scrapingant.com/?ref=mdk4y2q),
+set the API token using either the `SCRAPINGANT_API_TOKEN` environment variable
+or the `--scrapingant-api-token` command-line argument.
 
-Accessing YouTube requires a paid ScrapingAnt subscription.
+Accessing YouTube requires a paid ScrapingAnt Web Scraping API subscription.
 YouTube access requires residential proxies, which consume more ScrapingAnt credits than standard proxy requests.
 See [the ScrapingAnt credit cost documentation](https://docs.scrapingant.com/credits-cost) for details.
 

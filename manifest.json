@@ -3,7 +3,7 @@
   "manifest_version": "0.4",
   "name": "mcp-youtube-transcript",
   "display_name": "YouTube Transcript MCP Server",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "MCP server retrieving transcripts of YouTube videos",
   "author": {
     "name": "Junpei Kawamoto",
@@ -14,12 +14,13 @@
   "documentation": "https://github.com/jkawamoto/mcp-youtube-transcript",
   "support": "https://github.com/jkawamoto/mcp-youtube-transcript/issues",
   "server": {
-    "type": "python",
+    "type": "uv",
     "entry_point": "src/mcp_youtube_transcript/__main__.py",
     "mcp_config": {
-      "command": "uvx",
+      "command": "uv",
       "args": [
-        "--from",
+        "run",
+        "--directory",
         "${__dirname}",
         "mcp-youtube-transcript",
         "--response-limit",
