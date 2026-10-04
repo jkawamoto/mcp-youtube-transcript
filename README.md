@@ -6,60 +6,30 @@
 [![GitHub License](https://img.shields.io/github/license/jkawamoto/mcp-youtube-transcript)](https://github.com/jkawamoto/mcp-youtube-transcript/blob/main/LICENSE)
 [![Dockerhub](https://img.shields.io/badge/Docker-mcp%2Fyoutube--transcript-blue.svg)](https://hub.docker.com/mcp/server/youtube_transcript)
 
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server
+that fetches transcripts and metadata from YouTube videos directly into your LLM workflows.
 
-This MCP server retrieves transcripts for given YouTube video URLs.
+Designed specifically for AI agents, it seamlessly handles long-form videos through automatic pagination
+and provides robust proxy support to circumvent YouTube rate limits and IP bans.
 
-## Tools
-This MCP server provides the following tools:
+## Key Features
+- **Rich Transcript Retrieval**: Fetch raw text, timestamped segments, and video metadata in multiple languages.
+- **Smart Chunking & Pagination**: Automatically chunks long transcripts (default: 50,000 characters) to prevent context
+                                   window overflow, letting models page through hours of video effortlessly.
+- **Resilient Proxy Support**: Built-in support for residential proxies (Webshare, ScrapingAnt)
+                               and standard HTTP/HTTPS proxies to prevent IP blocks.
+- **Universal Compatibility**: Works with Claude Desktop, Cursor, LM Studio, Goose, and any standard MCP client.
 
-### `get_transcript`
-Fetches the transcript of a specified YouTube video.
-
-#### Parameters
-- **url** *(string)*: The full URL of the YouTube video. This field is required.
-- **lang** *(string, optional)*: The desired language for the transcript. Defaults to `en` if not specified.
-- **next_cursor** *(string, optional)*: Cursor to retrieve the next page of the transcript.
-
-### `get_timed_transcript`
-Fetches the transcript of a specified YouTube video with timestamps.
-
-#### Parameters
-- **url** *(string)*: The full URL of the YouTube video. This field is required.
-- **lang** *(string, optional)*: The desired language for the transcript. Defaults to `en` if not specified.
-- **next_cursor** *(string, optional)*: Cursor to retrieve the next page of the transcript.
-
-### `get_video_info`
-Fetches the metadata of a specified YouTube video.
-
-#### Parameters
-- **url** *(string)*: The full URL of the YouTube video. This field is required.
-
-### `get_available_languages`
-Retrieves the available languages for the video.
-
-#### Parameters
-- **url** *(string)*: The full URL of the YouTube video. This field is required.
-
-## Installation
+## Quick Start & Installation
 > [!NOTE]
 > You'll need [`uv`](https://docs.astral.sh/uv) installed on your system to use `uvx` command.
 
-### For [goose](https://block.github.io/goose/)
-Please refer to this tutorial for detailed installation instructions:
-[YouTube Transcript Extension](https://block.github.io/goose/docs/mcp/youtube-transcript-mcp).
+This server communicates via standard `stdio`.
+Most MCP clients can run it directly using `uvx` (part of [Astral `uv`](https://github.com/astral-sh/uv)).
 
-### For [Claude](https://claude.com/download)
+### General Configuration (Standard MCP JSON)
 
-Download the latest MCP bundle `mcp-youtube-transcript.mcpb` from
-the [Releases](https://github.com/jkawamoto/mcp-youtube-transcript/releases) page,
-then open the downloaded `.mcpb `file or drag it into the Claude Desktop's Settings window.
-
-<details>
-<summary>Manually configuration</summary>
-
-You can also manually configure this server for Claude Desktop.
-Edit the `claude_desktop_config.json` file by adding the following entry under
-`mcpServers`:
+Add this entry to your client's MCP configuration file (typically under `mcpServers`):
 
 ```json
 {
@@ -75,33 +45,78 @@ Edit the `claude_desktop_config.json` file by adding the following entry under
   }
 }
 ```
-After editing, restart the application.
+<details>
+<summary><strong>Client-Specific Setup Guides (Click to expand)</strong></summary>
 
-</details>
+#### Claude Desktop
+- **GUI (Drag & Drop)**: Download the `.mcpb` bundle
+    from the [Releases page](https://github.com/jkawamoto/mcp-youtube-transcript/releases)
+    and drop it into your Claude Desktop Settings.
+- **Manual Config**: Add the JSON above to `claude_desktop_config.json` (restart Claude Desktop after saving):
+  - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+  - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-For more information,
-see: [Connect to local MCP servers - Model Context Protocol.](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
+#### Cursor
+1. Go to **Cursor Settings** > **Features** > **MCP Servers**.
+2. Click **+ Add New MCP Server**.
+3. Name: `youtube-transcript`, Type: `command`.
+4. Command: `uvx --from git+https://github.com/jkawamoto/mcp-youtube-transcript mcp-youtube-transcript`
 
-### For [LM Studio](https://lmstudio.ai/)
+#### [Goose](https://block.github.io/goose/)
+Please refer to this tutorial for detailed installation instructions:
+[YouTube Transcript Extension](https://block.github.io/goose/docs/mcp/youtube-transcript-mcp).
+
+#### [LM Studio](https://lmstudio.ai/)
 To configure this server for LM Studio, click the button below.
 
 [![Add MCP Server youtube-transcript to LM Studio](https://files.lmstudio.ai/deeplink/mcp-install-light.svg)](https://lmstudio.ai/install-mcp?name=youtube-transcript&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLWZyb20iLCJnaXQraHR0cHM6Ly9naXRodWIuY29tL2prYXdhbW90by9tY3AteW91dHViZS10cmFuc2NyaXB0IiwibWNwLXlvdXR1YmUtdHJhbnNjcmlwdCJdfQ%3D%3D)
+</details>
 
 ### Using Docker
-
 A Docker image for this server is available on [Docker Hub](https://hub.docker.com/mcp/server/youtube_transcript/).
 Please refer to the Docker Hub page for detailed usage instructions and documentation.
 
-## Response Pagination
-When retrieving transcripts for longer videos, the content may exceed the token size limits of the LLM.
-To avoid this issue, this server splits transcripts that exceed 50,000 characters.
-If a transcript is split, the response will include a `next_cursor`.
-To retrieve the next part, include this `next_cursor` value in your request.
+## Available Tools
 
-The token size limits vary depending on the LLM and language you are using.
-If you need to split responses into smaller chunks,
-you can adjust this using the `--response-limit` command line argument.
-For example, the configuration below splits responses to contain no more than 15,000 characters each:
+The server registers the following MCP tools for LLM agents:
+
+| Tool | Description |
+| :--- | :--- |
+| `get_transcript` | Retrieves the plain-text transcript for a YouTube video URL. |
+| `get_timed_transcript` | Retrieves transcript segments with start times and durations. |
+| `get_available_languages` | Lists all available transcript languages (manual & auto-generated). |
+| `get_video_info` | Fetches video metadata such as title and channel information. |
+
+<details>
+<summary><strong>Tool Parameters & Schema</strong></summary>
+
+- **`get_transcript`**
+  - `url` (*string, required*): Full YouTube video URL.
+  - `lang` (*string, optional*): Preferred language code (defaults to `"en"`).
+  - `next_cursor` (*string, optional*): Cursor token to fetch the next chunk for long videos.
+
+- **`get_timed_transcript`**
+  - `url` (*string, required*): Full YouTube video URL.
+  - `lang` (*string, optional*): Preferred language code (defaults to `"en"`).
+  - `next_cursor` (*string, optional*): Cursor token to fetch the next chunk.
+
+- **`get_available_languages`**
+  - `url` (*string, required*): Full YouTube video URL.
+
+- **`get_video_info`**
+  - `url` (*string, required*): Full YouTube video URL.
+
+</details>
+
+## Advanced Configuration
+
+### Handling Long Videos (Pagination)
+Long videos (e.g., lectures, conferences, podcast episodes) can quickly exceed LLM token context limits.
+By default, transcripts exceeding **50,000 characters** are chunked. When a response is split,
+a `next_cursor` is provided so the LLM agent can autonomously query the rest.
+
+To customize the chunk character limit, supply `--response-limit`.
+To disable pagination and fetch the entire transcript at once, set `--response-limit` to a negative value (e.g., `-1`):
 
 ```json
 {
@@ -120,30 +135,82 @@ For example, the configuration below splits responses to contain no more than 15
 }
 ```
 
-## Using Proxy Servers
-In environments where access to YouTube is restricted, you can use proxy servers.
+### Avoiding IP Bans (Proxy Setup)
+YouTube aggressively blocks automated transcript requests from cloud providers and data center IPs.
+Using residential or rotating proxies ensures uninterrupted access.
 
-### ScrapingAnt
-When using [ScrapingAnt](https://scrapingant.com/?ref=mdk4y2q),
-set the API token using either the `SCRAPINGANT_API_TOKEN` environment variable
-or the `--scrapingant-api-token` command-line argument.
+#### 1. Webshare Residential Proxy
+Set credentials via environment variables or command-line flags:
+
+```json
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+        "mcp-youtube-transcript"
+      ],
+      "env": {
+        "WEBSHARE_PROXY_USERNAME": "your_username",
+        "WEBSHARE_PROXY_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+```
+*(CLI equivalents: `--webshare-proxy-username` and `--webshare-proxy-password`)*
+
+#### 2. ScrapingAnt
+If using [ScrapingAnt](https://scrapingant.com/?ref=mdk4y2q), supply your API token:
+
+```json
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+        "mcp-youtube-transcript"
+      ],
+      "env": {
+        "SCRAPINGANT_API_TOKEN": "your_api_token"
+      }
+    }
+  }
+}
+```
+*(CLI equivalent: `--scrapingant-api-token`)*
 
 Accessing YouTube requires a paid ScrapingAnt Web Scraping API subscription.
 YouTube access requires residential proxies, which consume more ScrapingAnt credits than standard proxy requests.
 See [the ScrapingAnt credit cost documentation](https://docs.scrapingant.com/credits-cost) for details.
 
-### Webshare
-When using [Webshare](https://www.webshare.io/), set the username and password for the Residential Proxy using either
-the environment variables `WEBSHARE_PROXY_USERNAME` and `WEBSHARE_PROXY_PASSWORD`,
-or the command line arguments `--webshare-proxy-username` and `--webshare-proxy-password`.
+#### 3. Standard / Generic HTTP & HTTPS Proxies
+Specify custom proxy endpoints via `HTTP_PROXY` / `HTTPS_PROXY` (or `--http-proxy` / `--https-proxy`):
 
-### Other proxy servers
-When using other proxy servers, set the proxy server URL using either the environment variables `HTTP_PROXY` or
-`HTTPS_PROXY`, or the command line arguments `--http-proxy` or `--https-proxy`.
+```json
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+        "mcp-youtube-transcript"
+      ],
+      "env": {
+        "HTTPS_PROXY": "http://username:password@proxy.example.com:8080"
+      }
+    }
+  }
+}
+```
 
 For more details, please visit:
 [Working around IP bans - YouTube Transcript API](https://github.com/jdepoix/youtube-transcript-api?tab=readme-ov-file#working-around-ip-bans-requestblocked-or-ipblocked-exception).
 
 ## License
-
 This application is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
