@@ -121,8 +121,8 @@ class VideoInfo(BaseModel):
 
 
 def _parse_time_info(date: int, timestamp: int, duration: int) -> tuple[datetime, str]:
-    parsed_date = datetime.strptime(str(date), "%Y%m%d").date()  # noqa: DTZ007
-    parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()  # noqa: DTZ007
+    parsed_date = datetime.strptime(str(date), "%Y%m%d").date()
+    parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()
     upload_date = datetime.combine(parsed_date, parsed_time, timezone.utc)
     duration_str = humanize.naturaldelta(timedelta(seconds=duration))
     return upload_date, duration_str
