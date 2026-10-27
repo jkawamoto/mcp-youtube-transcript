@@ -20,11 +20,18 @@ import humanize
 import requests
 from mcp import ServerSession
 from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import AwareDatetime, BaseModel, Field
-from youtube_transcript_api import FetchedTranscriptSnippet, TranscriptList, YouTubeTranscriptApi
+from youtube_transcript_api import (
+    FetchedTranscriptSnippet,
+    TranscriptList,
+    YouTubeTranscriptApi,
+    YouTubeTranscriptApiException,
+)
 from youtube_transcript_api.proxies import GenericProxyConfig, ProxyConfig, WebshareProxyConfig
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
+from yt_dlp.utils import DownloadError
 
 SCRAPINGANT_PROXY_URL = (
     "https://scrapingant&browser=false&forward_headers=true&proxy_type=residential:{api_token}@proxy.scrapingant.com"
@@ -82,7 +89,7 @@ class Transcript(BaseModel):
 
     title: str = Field(description="Title of the video")
     transcript: str = Field(description="Transcript of the video")
-    next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None)
+    next_cursor: int | None = Field(description="Cursor to retrieve the next page of the transcript", default=None)
 
 
 class TranscriptSnippet(BaseModel):
@@ -107,7 +114,7 @@ class TimedTranscript(BaseModel):
 
     title: str = Field(description="Title of the video")
     snippets: list[TranscriptSnippet] = Field(description="Transcript snippets of the video")
-    next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None)
+    next_cursor: int | None = Field(description="Cursor to retrieve the next page of the transcript", default=None)
 
 
 class VideoInfo(BaseModel):
@@ -180,13 +187,19 @@ def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tupl
         languages = [lang, "en"]
 
     info = _get_video_info(ctx, video_url)
-    transcripts = _get_transcript_list(ctx, _parse_video_id(video_url)).find_transcript(languages).fetch()
+    try:
+        transcripts = _get_transcript_list(ctx, _parse_video_id(video_url)).find_transcript(languages).fetch()
+    except YouTubeTranscriptApiException as exc:
+        raise ToolError(str(exc)) from exc
     return info.title, transcripts.snippets
 
 
 @lru_cache
 def _get_video_info(ctx: AppContext, video_url: str) -> VideoInfo:
-    res = ctx.dlp.extract_info(video_url, download=False)
+    try:
+        res = ctx.dlp.extract_info(video_url, download=False)
+    except DownloadError as exc:
+        raise ToolError(str(exc)) from exc
     upload_date, duration = _parse_time_info(res["upload_date"], int(res["timestamp"] or 0), res["duration"] or 0)
     return VideoInfo(
         title=res["title"] or "",
@@ -223,7 +236,7 @@ def server(
         ctx: Context[ServerSession, AppContext],
         url: str = Field(description="The URL of the YouTube video"),
         lang: str = Field(description="The preferred language for the transcript", default="en"),
-        next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
+        next_cursor: int | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
     ) -> Transcript:
         """Retrieves the transcript of a YouTube video."""
 
@@ -237,7 +250,7 @@ def server(
         cursor = None
         for i, line in islice(enumerate(transcripts), int(next_cursor or 0), None):
             if len(res) + len(line) + 1 > response_limit:
-                cursor = str(i)
+                cursor = i
                 break
             res += f"{line}\n"
 
@@ -248,7 +261,7 @@ def server(
         ctx: Context[ServerSession, AppContext],
         url: str = Field(description="The URL of the YouTube video"),
         lang: str = Field(description="The preferred language for the transcript", default="en"),
-        next_cursor: str | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
+        next_cursor: int | None = Field(description="Cursor to retrieve the next page of the transcript", default=None),
     ) -> TimedTranscript:
         """Retrieves the transcript of a YouTube video with timestamps."""
 
@@ -265,7 +278,7 @@ def server(
         for i, s in islice(enumerate(snippets), int(next_cursor or 0), None):
             snippet = TranscriptSnippet.from_fetched_transcript_snippet(s)
             if size + len(snippet) + 1 > response_limit:
-                cursor = str(i)
+                cursor = i
                 break
             res.append(snippet)
 

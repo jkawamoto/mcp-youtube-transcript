@@ -200,6 +200,7 @@ async def test_get_transcript_with_response_limit(mcp_client_session_with_respon
         transcript += t.transcript + "\n"
         if t.next_cursor is None:
             break
+        assert isinstance(t.next_cursor, int)
         cursor = t.next_cursor
 
     assert t.title == expect.title
@@ -350,6 +351,7 @@ async def test_get_timed_transcript_with_response_limit(mcp_client_session_with_
         snippets.extend(t.snippets)
         if t.next_cursor is None:
             break
+        assert isinstance(t.next_cursor, int)
         cursor = t.next_cursor
 
     assert t.title == expect.title
