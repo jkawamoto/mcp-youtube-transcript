@@ -736,7 +736,7 @@ wheels = [
 
 [[package]]
 name = "mcp-youtube-transcript"
-version = "0.8.1"
+version = "0.8.2"
 source = { editable = "." }
 dependencies = [
     { name = "humanize" },
