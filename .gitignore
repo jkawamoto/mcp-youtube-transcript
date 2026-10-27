@@ -220,3 +220,6 @@ __marimo__/
 
 # MCP Bundle file
 *.mcpb
+
+# Test cassettes
+tests/cassettes/
