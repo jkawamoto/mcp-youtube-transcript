@@ -93,12 +93,12 @@ The server registers the following MCP tools for LLM agents:
 - **`get_transcript`**
   - `url` (*string, required*): Full YouTube video URL.
   - `lang` (*string, optional*): Preferred language code (defaults to `"en"`).
-  - `next_cursor` (*string, optional*): Cursor token to fetch the next chunk for long videos.
+  - `next_cursor` (*integer, optional*): Cursor to fetch the next chunk for long videos.
 
 - **`get_timed_transcript`**
   - `url` (*string, required*): Full YouTube video URL.
   - `lang` (*string, optional*): Preferred language code (defaults to `"en"`).
-  - `next_cursor` (*string, optional*): Cursor token to fetch the next chunk.
+  - `next_cursor` (*integer, optional*): Cursor to fetch the next chunk.
 
 - **`get_available_languages`**
   - `url` (*string, required*): Full YouTube video URL.
