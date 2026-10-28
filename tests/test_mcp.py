@@ -7,7 +7,7 @@
 #  http://opensource.org/licenses/mit-license.php
 import os
 from collections.abc import AsyncGenerator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import humanize
 import pytest
@@ -399,5 +399,5 @@ async def test_get_available_languages(mcp_client_session: ClientSession) -> Non
 
 def test_parse_time_info() -> None:
     upload_date, duration = _parse_time_info(20250921, 1650496000, 1234567)
-    assert upload_date == datetime(2025, 9, 21, 16, 50, 49, 600000, timezone.utc)
+    assert upload_date == datetime(2025, 9, 21, 16, 50, 49, 600000, UTC)
     assert duration == humanize.naturaldelta(timedelta(seconds=1234567))

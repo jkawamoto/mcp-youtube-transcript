@@ -4,18 +4,17 @@ requires = [ "hatchling" ]
 
 [project]
 name = "mcp-youtube-transcript"
-version = "0.8.2"
+version = "0.8.3"
 description = "MCP server retrieving transcripts of YouTube videos"
 readme = "README.md"
 authors = [
     { name = "Junpei Kawamoto", email = "kawamoto.junpei@gmail.com" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -45,7 +44,7 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.pyproject-fmt]
@@ -60,7 +59,7 @@ overrides = [ { module = [
     ], ignore_missing_imports = true } ]
 
 [tool.bumpversion]
-current_version = "0.8.2"
+current_version = "0.8.3"
 commit = true
 files = [
     { replace = 'version = "{new_version}"', filename = "pyproject.toml", search = 'version = "{current_version}"' },
