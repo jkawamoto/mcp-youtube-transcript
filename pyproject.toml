@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "mcp-youtube-transcript"
-version = "0.8.2"
+version = "0.8.3"
 description = "MCP server retrieving transcripts of YouTube videos"
 readme = "README.md"
 authors = [
@@ -59,7 +59,7 @@ overrides = [ { module = [
     ], ignore_missing_imports = true } ]
 
 [tool.bumpversion]
-current_version = "0.8.2"
+current_version = "0.8.3"
 commit = true
 files = [
     { replace = 'version = "{new_version}"', filename = "pyproject.toml", search = 'version = "{current_version}"' },
