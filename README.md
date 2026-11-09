@@ -14,6 +14,10 @@ that fetches transcripts and metadata from YouTube videos directly into your LLM
 Designed specifically for AI agents, it seamlessly handles long-form videos through automatic pagination
 and provides robust proxy support to circumvent YouTube rate limits and IP bans.
 
+![mcp-youtube-transcript](header.png)
+
+The header image was generated with Muse (Muse Image).
+
 ## Key Features
 - **Rich Transcript Retrieval**: Fetch raw text, timestamped segments, and video metadata in multiple languages.
 - **Smart Chunking & Pagination**: Automatically chunks long transcripts (default: 50,000 characters) to prevent context
