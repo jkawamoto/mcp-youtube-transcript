@@ -39,6 +39,12 @@ from mcp_youtube_transcript import server
 )
 @click.option("--http-proxy", metavar="URL", envvar="HTTP_PROXY", help="HTTP proxy server URL.")
 @click.option("--https-proxy", metavar="URL", envvar="HTTPS_PROXY", help="HTTPS proxy server URL.")
+@click.option(
+    "--serpbase-api-key",
+    metavar="KEY",
+    envvar="SERPBASE_API_KEY",
+    help="SerpBase API key, used for transcripts YouTube refuses to serve to this IP.",
+)
 @click.version_option()
 def main(
     response_limit: int | None,
@@ -47,6 +53,7 @@ def main(
     scrapingant_api_token: str | None,
     http_proxy: str | None,
     https_proxy: str | None,
+    serpbase_api_key: str | None,
 ) -> None:
     """YouTube Transcript MCP server."""
 
@@ -61,5 +68,6 @@ def main(
         scrapingant_api_token=scrapingant_api_token,
         http_proxy=http_proxy,
         https_proxy=https_proxy,
+        serpbase_api_key=serpbase_api_key,
     ).run()
     logger.info("closed Youtube Transcript MCP server")

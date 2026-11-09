@@ -7,6 +7,7 @@
 #  http://opensource.org/licenses/mit-license.php
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -33,6 +34,10 @@ from yt_dlp import YoutubeDL
 from yt_dlp.extractor.youtube import YoutubeIE
 from yt_dlp.utils import DownloadError
 
+from .serpbase import SerpBaseError, fetch_transcript
+
+logger = logging.getLogger(__name__)
+
 SCRAPINGANT_PROXY_URL = (
     "https://scrapingant&browser=false&forward_headers=true&proxy_type=residential:{api_token}@proxy.scrapingant.com"
 )
@@ -42,6 +47,8 @@ SCRAPINGANT_PROXY_URL = (
 class AppContext:
     ytt_api: YouTubeTranscriptApi
     dlp: YoutubeDL
+    http_client: requests.Session
+    serpbase_api_key: str | None = None
 
 
 @asynccontextmanager
@@ -52,6 +59,7 @@ async def _app_lifespan(
     scrapingant_api_token: str | None = None,
     http_proxy: str | None = None,
     https_proxy: str | None = None,
+    serpbase_api_key: str | None = None,
 ) -> AsyncIterator[AppContext]:
     proxy_config: ProxyConfig | None = None
     ytdlp_params: dict[str, Any] = {
@@ -81,7 +89,12 @@ async def _app_lifespan(
 
         ytt_api = YouTubeTranscriptApi(http_client=http_client, proxy_config=proxy_config)
         dlp.add_info_extractor(YoutubeIE())
-        yield AppContext(ytt_api=ytt_api, dlp=dlp)
+        yield AppContext(
+            ytt_api=ytt_api,
+            dlp=dlp,
+            http_client=http_client,
+            serpbase_api_key=serpbase_api_key,
+        )
 
 
 class Transcript(BaseModel):
@@ -186,12 +199,37 @@ def _get_transcript_snippets(ctx: AppContext, video_url: str, lang: str) -> tupl
     else:
         languages = [lang, "en"]
 
-    info = _get_video_info(ctx, video_url)
     try:
+        info = _get_video_info(ctx, video_url)
         transcripts = _get_transcript_list(ctx, _parse_video_id(video_url)).find_transcript(languages).fetch()
-    except YouTubeTranscriptApiException as exc:
-        raise ToolError(str(exc)) from exc
+    except (ToolError, YouTubeTranscriptApiException) as exc:
+        # YouTube refused this IP. SerpBase answers the same question from its own side, so the
+        # video is still readable when a key is configured; without one the original error stands.
+        snippets = _get_serpbase_transcript(ctx, video_url, lang)
+        if snippets is None:
+            raise ToolError(str(exc)) from exc
+        logger.info("fetched the transcript of %s through SerpBase", video_url)
+        return _get_title_or_empty(ctx, video_url), snippets
     return info.title, transcripts.snippets
+
+
+def _get_serpbase_transcript(ctx: AppContext, video_url: str, lang: str) -> list[FetchedTranscriptSnippet] | None:
+    """Transcript from SerpBase, or None when it is not configured or did not answer."""
+    if not ctx.serpbase_api_key:
+        return None
+    try:
+        return fetch_transcript(ctx.http_client, ctx.serpbase_api_key, _parse_video_id(video_url), lang)
+    except SerpBaseError as exc:
+        logger.warning("SerpBase could not fetch the transcript of %s: %s", video_url, exc)
+        return None
+
+
+def _get_title_or_empty(ctx: AppContext, video_url: str) -> str:
+    """The video title, or an empty string when the metadata request is blocked as well."""
+    try:
+        return _get_video_info(ctx, video_url).title
+    except (ToolError, YouTubeTranscriptApiException):
+        return ""
 
 
 @lru_cache
@@ -217,6 +255,7 @@ def server(
     scrapingant_api_token: str | None = None,
     http_proxy: str | None = None,
     https_proxy: str | None = None,
+    serpbase_api_key: str | None = None,
 ) -> MCPServer:
     """Initializes the MCP server."""
     mcp = MCPServer(
@@ -228,6 +267,7 @@ def server(
             scrapingant_api_token=scrapingant_api_token,
             http_proxy=http_proxy,
             https_proxy=https_proxy,
+            serpbase_api_key=serpbase_api_key,
         ),
     )
 

@@ -218,5 +218,33 @@ Specify custom proxy endpoints via `HTTP_PROXY` / `HTTPS_PROXY` (or `--http-prox
 For more details, please visit:
 [Working around IP bans - YouTube Transcript API](https://github.com/jdepoix/youtube-transcript-api?tab=readme-ov-file#working-around-ip-bans-requestblocked-or-ipblocked-exception).
 
+#### 4. SerpBase Transcript API (Fallback)
+When YouTube refuses the IP the server runs on, the transcript can come from
+[SerpBase](https://serpbase.dev) instead, which fetches it from its own side. This path is off
+unless a key is configured, and it only runs after the direct request has failed:
+
+```json
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+        "mcp-youtube-transcript"
+      ],
+      "env": {
+        "SERPBASE_API_KEY": "your_api_key"
+      }
+    }
+  }
+}
+```
+*(CLI equivalent: `--serpbase-api-key`)*
+
+One transcript costs 2 credits, and a new account starts with 100 free credits, no card required
+(keys: https://serpbase.dev/api-keys). If the fallback fails too, the error from the direct request
+is the one the tool reports; the fallback's own error only goes to the log.
+
 ## License
 This application is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
