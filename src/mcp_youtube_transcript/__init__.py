@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, time, timedelta
 from functools import lru_cache, partial
 from itertools import islice
 from typing import Any, Final
@@ -129,7 +129,11 @@ class VideoInfo(BaseModel):
 
 def _parse_time_info(date: int, timestamp: int, duration: int) -> tuple[datetime, str]:
     parsed_date = datetime.strptime(str(date), "%Y%m%d").date()
-    parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()
+    try:
+        parsed_time = datetime.strptime(str(timestamp), "%H%M%S%f").time()
+    except ValueError:
+        # yt-dlp returns 0 when the upload time is unavailable.
+        parsed_time = time(0, 0)
     upload_date = datetime.combine(parsed_date, parsed_time, UTC)
     duration_str = humanize.naturaldelta(timedelta(seconds=duration))
     return upload_date, duration_str
